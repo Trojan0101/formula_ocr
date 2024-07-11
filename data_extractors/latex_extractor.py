@@ -18,6 +18,7 @@ class LatexExtractor:
 
     def convert_image_to_latex(self, url: str) -> dict:
         response_object = None
+
         def process_image(downloaded_image_path):
             try:
                 latex_result, latex_elapse = self.latex_model(downloaded_image_path)
