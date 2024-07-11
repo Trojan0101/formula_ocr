@@ -8,7 +8,7 @@ import requests
 from rapid_latex_ocr import LatexOCR
 from urllib.parse import urlparse
 
-from utils.response_object import ResponseObject
+from data_extractors.utils.response_object import ResponseObject
 
 
 class LatexExtractor:
