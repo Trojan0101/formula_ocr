@@ -16,7 +16,6 @@ app = Flask(__name__)
 def convert_latex():
     request_data = request.get_json()
     image_url = request_data.get("src")
-    image_language = request_data.get("language")
 
     try:
         latex_extractor = LatexExtractor()
@@ -31,7 +30,7 @@ def convert_latex():
 def convert_text():
     request_data = request.get_json()
     image_url = request_data.get("src")
-    image_language = request_data.get("language")
+    image_language = [x.strip() for x in request_data.get("language").split(",")]
 
     try:
         text_extractor = TextExtractor(image_language)
