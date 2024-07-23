@@ -8,7 +8,7 @@ import requests
 from rapid_latex_ocr import LatexOCR
 from urllib.parse import urlparse
 
-from data_extractors.utils.response_object import ResponseObject
+from data_extractors.utils.response_object_formula import ResponseObjectFormula
 
 
 class LatexExtractor:
@@ -35,7 +35,7 @@ class LatexExtractor:
                     f.write(response.content)
 
                 latex_result, latex_elapse = process_image(self.downloaded_file_path)
-                response_object = ResponseObject(latex_result, latex_elapse)
+                response_object = ResponseObjectFormula(latex_result, latex_elapse)
             except Exception as e:
                 return {"error": str(e)}
         else:

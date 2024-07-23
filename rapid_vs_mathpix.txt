@@ -17,7 +17,7 @@ $$
 3:
 rapid:
 {'latex_text': '\\begin{array}{c c}{{(\\mathbf{i})\\ \\ 9\\sin58^{\\circ}}}&{{(\\mathbf{2})\\ \\ 9\\cos58^{\\circ}}}\\\\ {{(\\mathbf{j})\\ \\vartheta\\ \\mathrm{tan}\\,58^{\\circ}}}&{{(\\bar{\\ 4})\\ \\frac{9}{{\\mathrm{Sin}}\\,58^{\\circ}}}}\\end{array}', 'latex_elapse': 3.689326399999999}
-mathpix: (text)
+mathpix: (In cases like this, mathpix doesn't have latex output, it just has text output.)
 (1) $9 \sin 58^{\circ}$
 (2) $9 \cos 58^{\circ}$
 (3) $9 \tan 58^{\circ}$
@@ -51,7 +51,7 @@ $$
 7:
 rapid:
 {'latex_text': '\\begin{array}{c}{{(\\mathbf{\\hat{J}}\\sin A={\\frac{a}{c}},\\cos A={\\frac{b}{c}}\\circ|{\\frac{\\mathbf{E}\\cdot\\mathbf{\\hat{\\pi}}}{c}}\\cos A={\\frac{b}{c}}\\circ|{\\frac{\\mathbf{E}\\cdot\\mathbf{\\hat{\\pi}}}{c}}\\cos B=\\underbrace{a}{c}\\circ|{\\frac{\\mathbf{E}\\cdot\\mathbf{\\hat{\\pi}}}{\\mathbf{\\hat{\\pi}}}}\\sin B=\\cos A}}\\\\ {{(\\mathbf{\\hat{\\bf\\hat{\\Pi}}}\\arctan A={\\frac{a}{b}},\\tan B={\\frac{a}{d}}\\circ|{\\frac{\\mathbf{E}\\cdot\\mathbf{\\hat{\\pi}}}{\\mathbf{\\hat{\\pi}}}}\\tan B={\\frac{a}{d}},\\tan B=\\underbrace{{\\frac{\\mathbf{\\hat{\\pi}}}}{a}},\\tan B}}\\end{array}', 'latex_elapse': 25.430171900000005}
-mathpix: (text)
+mathpix: (In cases like this, mathpix doesn't have latex output, it just has text output.)
 (1) $\sin A=\frac{a}{c}, \cos A=\frac{b}{c}$ 이므로 $\sin A \neq \cos A$
 (2) $\sin B=\frac{b}{c}, \cos B=\frac{a}{c}$ 이므로 $\sin B \neq \cos B$
 (3) $\tan A=\frac{a}{b}, \tan B=\frac{b}{a}$ 이므로 $\tan A \neq \tan B$
