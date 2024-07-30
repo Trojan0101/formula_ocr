@@ -24,7 +24,7 @@ class LatexExtractor:
                 latex_result, latex_elapse = self.latex_model(downloaded_image_path)
                 return latex_result, latex_elapse
             except Exception as exc:
-                return {"error": str(exc)}, None, None
+                return {"error: Image error!!!"}, None
 
         parsed_url = urlparse(url)
         if parsed_url.scheme and parsed_url.netloc:
