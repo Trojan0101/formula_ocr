@@ -11,11 +11,13 @@ import cv2
 import pandas as pd
 import numpy as np
 import pytesseract
+import logging
 
 import requests
 
 from data_extractors.utils.response_object_text import ResponseObjectText
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class TextExtractor:
 
@@ -83,6 +85,7 @@ class TextExtractor:
                         'text': extracted_text,
                         'average_confidence': average_confidence
                     }
+                    logging.info(f"Language: {language}; Extracted: {extracted_text}; Confidence: {average_confidence}")
                 if text_confidence:
                     best_lang = max(text_confidence,
                                     key=lambda k: text_confidence[k]['average_confidence']
