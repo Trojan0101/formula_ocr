@@ -2,12 +2,12 @@
 
 **Steps to follow:**
 
-1) Clone the repo into formula_ocr_main directory.
+1) Clone the repo into formula_ocr_main directory:
 	```bash
  	git clone https://github.com/Trojan0101/formula_ocr_jupyter.git
  	```
 
-2) Copy tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server.
+2) Copy tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
 	```bash
     git clone https://github.com/tesseract-ocr/tessdata.git
 	```
