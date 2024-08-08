@@ -1,4 +1,4 @@
-# formula_ocr_jupyter
+# Formula OCR
 
 **Steps to follow:**
 
