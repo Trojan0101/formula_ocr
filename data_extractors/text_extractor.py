@@ -24,7 +24,7 @@ class TextExtractor:
     def __init__(self):
         self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
 
-    def convert_image_to_text(self, url: str) -> dict:
+    def convert_image_to_text(self, url: str, request_id: str) -> dict:
         response_object = None
 
         def preprocess_image(downloaded_image_path):
@@ -53,12 +53,6 @@ class TextExtractor:
                         [-1,  9, -1],
                         [-1, -1, -1]])
             sharpened_image = cv2.filter2D(img_binary, -1, kernel)
-        
-            # Plot the image using Matplotlib
-            # plt.figure(figsize=(10, 10))
-            # plt.imshow(sharpened_image, cmap='gray')
-            # plt.axis('off')
-            # plt.show()
             
             return sharpened_image
 
@@ -85,7 +79,7 @@ class TextExtractor:
                         'text': extracted_text,
                         'average_confidence': average_confidence
                     }
-                    logging.info(f"Language: {language}; Extracted: {extracted_text}; Confidence: {average_confidence}")
+                    logging.info(f"Request id : {request_id} -> Language: {language}; Extracted: {extracted_text}; Confidence: {average_confidence}")
                 if text_confidence:
                     best_lang = max(text_confidence,
                                     key=lambda k: text_confidence[k]['average_confidence']
@@ -96,6 +90,7 @@ class TextExtractor:
                     return best_text
 
             except Exception as exc:
+                logging.error(f"Request id : {request_id} -> Error: {exc}")
                 return {"error": str(exc)}
 
         parsed_url = urlparse(url)
@@ -109,8 +104,10 @@ class TextExtractor:
                 text_result = process_image(self.downloaded_file_path)
                 response_object = ResponseObjectText(text_result)
             except Exception as e:
+                logging.error(f"Request id : {request_id} -> Error with exception: {e}")
                 return {"error": str(e)}
         else:
+            logging.error(f"Request id : {request_id} -> Error: Invalid URL format")
             return {"error": "Invalid URL format"}
 
         return response_object.to_dict()
