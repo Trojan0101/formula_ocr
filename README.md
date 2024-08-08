@@ -3,54 +3,60 @@
 **Steps to follow:**
 
 1) Clone the repo into formula_ocr_main directory:
-	```bash
- 	git clone https://github.com/Trojan0101/formula_ocr_jupyter.git
- 	```
+    ```bash
+     git clone https://github.com/Trojan0101/formula_ocr.git
+     ```
 
-2) Copy tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
-	```bash
+2) Create a directory for file downloading:
+    ```bash
+     cd formula_ocr
+     mkdir downloaded_images
+     ```
+ 
+3) Copy tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
+    ```bash
     git clone https://github.com/tesseract-ocr/tessdata.git
-	```
-	```bash
+    ```
+    ```bash
     cd tesseract-ocr/tessdata
-	```
-	```bash
+    ```
+    ```bash
     mv chi_sim.traineddata chi_tra.traineddata kor.traineddata jpn.traineddata eng.traineddata path/to/tessdata
- 	```
+     ```
 
-3) Install dependencies:
-	```bash
+4) Install dependencies:
+    ```bash
     pip install virtualenv
-	```
-	```bash
+    ```
+    ```bash
     virtualenv formula_ocr_env
-	```
-	```bash
+    ```
+    ```bash
     source formula_ocr_env/bin/activate
-	```
-	```bash
+    ```
+    ```bash
     pip install -r ./requirements.txt
-	```
-	```bash
+    ```
+    ```bash
     pip install uwsgi
- 	```
+     ```
 
-4) Modify minimize_image method [Substitute size_tuple in the next line]:
-	```bash
- 	cd formula_ocr_env/<python_version>/site_packages/rapid_latex_ocr/
-	```
-	```bash
- 	nano utils.py
- 	```
- 	```python
- 	size_tuple = tuple(size.astype(int))
-  	```
+5) Modify minimize_image method [`Substitute size_tuple in the next line`]:
+    ```bash
+     cd formula_ocr_env/<python_version>/site_packages/rapid_latex_ocr/
+    ```
+    ```bash
+     nano utils.py
+     ```
+     ```python
+     size_tuple = tuple(size.astype(int))
+      ```
 
-5) Run:
-	```bash
-	nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
- 	```
+6) Run:
+    ```bash
+    nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
+     ```
 
 **Notes:**
 
-1) Path to tessdata can be /usr/local/share/tessdata or /usr/share/tessdata
+1) Path to tessdata can be `/usr/local/share/tessdata` or `/usr/share/tessdata`

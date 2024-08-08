@@ -19,12 +19,15 @@ from data_extractors.text_extractor import TextExtractor
 
 import uuid
 
+from data_extractors.utils.response_object import ResponseObject
+
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class MyFlaskApp(Flask):
     def __init__(self, import_name):
         super().__init__(import_name)
+        self.api_version = "1.0"
         self.latex_model_mixed = None
         self.latex_model = None
         self.setup_latex_model()
@@ -42,11 +45,10 @@ app = MyFlaskApp(__name__)
 
 @app.route('/convert_text', methods=['POST'])
 def convert_text():
-    api_version = "1.0"
     request_id = str(uuid.uuid4())
     downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
-    image_width = 0
-    image_height = 0
+    image_width = None
+    image_height = None
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
     request_data = request.get_json()
@@ -63,54 +65,39 @@ def convert_text():
             with Image.open(downloaded_file_path) as img:
                 image_width, image_height = img.size
         except Exception as e:
-            logging.error(f"Request id : {request_id} -> Error with exception: {e}")
-            final_response = {
-                "request_id": request_id,
-                "version": api_version,
-                "image_width": image_width,
-                "image_height": image_height,
-                "error": str(e)
-            }
-            return jsonify(final_response)
+            error = str(e)
+            logging.error(f"Request id : {request_id} -> Error with exception: {error}")
+            response_object = ResponseObject(request_id=request_id, version=app.api_version, image_width=image_width,
+                                             image_height=image_height, error=error)
+            return jsonify(response_object.to_dict())
     else:
-        logging.error(f"Request id : {request_id} -> Error: Invalid URL format")
-        final_response = {
-            "request_id": request_id,
-            "version": api_version,
-            "error": str({"error": "Invalid URL format"})
-        }
-        return jsonify(final_response)
+        error = str({"error": "Invalid URL format"})
+        logging.error(f"Request id : {request_id} -> Error: {error}")
+        response_object = ResponseObject(request_id=request_id, version=app.api_version, error=error)
+        return jsonify(response_object.to_dict())
 
     # Start data extraction
     try:
         text_extractor = TextExtractor()
-        response_data_text = text_extractor.convert_image_to_text(request_id=request_id)
+        text_result = text_extractor.convert_image_to_text(request_id=request_id)
 
         latex_extractor = LatexExtractor(app.latex_model)
-        response_data_latex = latex_extractor.convert_image_to_latex(request_id=request_id)
+        latex_styled_1_result = latex_extractor.convert_image_to_latex(request_id=request_id)
 
         latex_extractor_mixed = LatexExtractorMixed(app.latex_model_mixed)
-        response_data_latex_mixed = latex_extractor_mixed.recognize_image(request_id=request_id)
+        latex_styled_2_result = latex_extractor_mixed.recognize_image(request_id=request_id)
 
-        final_response = {
-            "request_id": request_id,
-            "version": api_version,
-            "image_width": image_width,
-            "image_height": image_height,
-            "text": response_data_text["text"],
-            "latex_styled_1": response_data_latex["latex_text"],
-            "latex_styled_2": response_data_latex_mixed
-        }
+        response_object = ResponseObject(request_id=request_id, version=app.api_version, image_width=image_width,
+                                         image_height=image_height, text=text_result,
+                                         latex_styled_1=latex_styled_1_result, latex_styled_2=latex_styled_2_result)
+        return jsonify(response_object.to_dict())
     except Exception as e:
-        final_response = {
-            "request_id": request_id,
-            "version": api_version,
-            "image_width": image_width,
-            "image_height": image_height,
-            "error": str(e)
-        }
+        error = str(e)
+        logging.error(f"Request id : {request_id} -> Error: {error}")
+        response_object = ResponseObject(request_id=request_id, version=app.api_version, image_width=image_width,
+                                         image_height=image_height, error=error)
 
-    return jsonify(final_response)
+    return jsonify(response_object.to_dict())
 
 
 if __name__ == '__main__':

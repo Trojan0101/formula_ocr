@@ -7,7 +7,6 @@ import os
 from typing import Any
 import logging
 
-from data_extractors.utils.response_object_formula import ResponseObjectFormula
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -32,9 +31,8 @@ class LatexExtractor:
         try:
             latex_result, latex_elapse = process_image(self.downloaded_file_path)
             logging.info(f"Request id : {request_id} -> latex_result: {latex_result}")
-            response_object = ResponseObjectFormula(latex_result, latex_elapse)
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return {"error": str(e)}
 
-        return response_object.to_dict()
+        return latex_result

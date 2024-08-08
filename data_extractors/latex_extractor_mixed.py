@@ -21,9 +21,9 @@ class LatexExtractorMixed:
         """Recognize text in the given image and optionally save the result."""
         try:
             image = Image.open(self.downloaded_file_path).convert('RGB')
-            outs2 = self.latex_model_mixed.recognize(image)
-            logging.info(f"Request id : {request_id} -> Extracted: {outs2}")
+            latex_mixed_result = self.latex_model_mixed.recognize(image)
+            logging.info(f"Request id : {request_id} -> Extracted: {latex_mixed_result}")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return {"error": str(e)}
-        return outs2
+        return latex_mixed_result

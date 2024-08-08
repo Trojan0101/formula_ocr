@@ -12,8 +12,6 @@ import numpy as np
 import pytesseract
 import logging
 
-from data_extractors.utils.response_object_text import ResponseObjectText
-
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
@@ -93,9 +91,8 @@ class TextExtractor:
 
         try:
             text_result = process_image(self.downloaded_file_path)
-            response_object = ResponseObjectText(text_result)
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return {"error": str(e)}
 
-        return response_object.to_dict()
+        return text_result.strip()
