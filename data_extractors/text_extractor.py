@@ -5,7 +5,6 @@ Date: 20-07-2024
 """
 import os
 from io import StringIO
-from urllib.parse import urlparse
 
 import cv2
 import pandas as pd
@@ -13,18 +12,17 @@ import numpy as np
 import pytesseract
 import logging
 
-import requests
-
 from data_extractors.utils.response_object_text import ResponseObjectText
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class TextExtractor:
 
     def __init__(self):
         self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
 
-    def convert_image_to_text(self, url: str, request_id: str) -> dict:
+    def convert_image_to_text(self, request_id: str) -> dict:
         response_object = None
 
         def preprocess_image(downloaded_image_path):
@@ -34,7 +32,7 @@ class TextExtractor:
             dpi = 300
             width_inch = img.shape[1] / dpi
             height_inch = img.shape[0] / dpi
-            
+
             if width_inch < 1 or height_inch < 1:
                 # If image is smaller than 300 DPI, resize to meet minimum DPI requirement
                 new_width = int(width_inch * dpi)
@@ -42,18 +40,17 @@ class TextExtractor:
                 img_resized = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
             else:
                 img_resized = img
-            
+
             # Convert to grayscale
             img_gray = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
-            
             # # Apply adaptive thresholding to capture varying text colors
-            img_binary = cv2.adaptiveThreshold(img_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+            img_binary = cv2.adaptiveThreshold(img_gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11,
+                                               2)
             # # Define the sharpening kernel
             kernel = np.array([[-1, -1, -1],
-                        [-1,  9, -1],
-                        [-1, -1, -1]])
+                               [-1, 9, -1],
+                               [-1, -1, -1]])
             sharpened_image = cv2.filter2D(img_binary, -1, kernel)
-            
             return sharpened_image
 
         def process_image(downloaded_image_path):
@@ -79,7 +76,8 @@ class TextExtractor:
                         'text': extracted_text,
                         'average_confidence': average_confidence
                     }
-                    logging.info(f"Request id : {request_id} -> Language: {language}; Extracted: {extracted_text}; Confidence: {average_confidence}")
+                    logging.info(
+                        f"Request id : {request_id} -> Language: {language}; Extracted: {extracted_text}; Confidence: {average_confidence}")
                 if text_confidence:
                     best_lang = max(text_confidence,
                                     key=lambda k: text_confidence[k]['average_confidence']
@@ -93,21 +91,11 @@ class TextExtractor:
                 logging.error(f"Request id : {request_id} -> Error: {exc}")
                 return {"error": str(exc)}
 
-        parsed_url = urlparse(url)
-        if parsed_url.scheme and parsed_url.netloc:
-            try:
-                response = requests.get(url)
-                response.raise_for_status()
-                with open(self.downloaded_file_path, 'wb') as f:
-                    f.write(response.content)
-
-                text_result = process_image(self.downloaded_file_path)
-                response_object = ResponseObjectText(text_result)
-            except Exception as e:
-                logging.error(f"Request id : {request_id} -> Error with exception: {e}")
-                return {"error": str(e)}
-        else:
-            logging.error(f"Request id : {request_id} -> Error: Invalid URL format")
-            return {"error": "Invalid URL format"}
+        try:
+            text_result = process_image(self.downloaded_file_path)
+            response_object = ResponseObjectText(text_result)
+        except Exception as e:
+            logging.error(f"Request id : {request_id} -> Error with exception: {e}")
+            return {"error": str(e)}
 
         return response_object.to_dict()
