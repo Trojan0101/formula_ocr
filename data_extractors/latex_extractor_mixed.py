@@ -22,7 +22,7 @@ class LatexExtractorMixed:
         try:
             image = Image.open(self.downloaded_file_path).convert('RGB')
             latex_mixed_result = self.latex_model_mixed.recognize(image)
-            logging.info(f"Request id : {request_id} -> Extracted: {latex_mixed_result}")
+            logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {latex_mixed_result}")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
