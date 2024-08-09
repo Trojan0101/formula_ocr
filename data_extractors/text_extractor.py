@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import pytesseract
 import logging
-import easyocr
+# import easyocr
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -78,30 +78,30 @@ class TextExtractor:
                 logging.error(f"Request id : {request_id} -> Error: {e}")
                 return f"error: {str(e)}"
 
-        def process_image_easyocr(downloaded_image_path):
-            languages = [['en']]
-            extracted_text = {}
-            try:
-                img_preprocessed = preprocess_image(downloaded_image_path)
-                for lang in languages:
-                    reader = easyocr.Reader(lang)
-                    result = reader.readtext(img_preprocessed, paragraph="False")
-                    extracted_text = ' '.join([text[1] for text in result])
-                logging.info(f"Request id : {request_id} -> Extracted Text EasyOCR: {extracted_text}")
-                return extracted_text
-            except Exception as e:
-                logging.error(f"Request id : {request_id} -> Error: {e}")
-                return f"error: {str(e)}"
+        # def process_image_easyocr(downloaded_image_path):
+        #     languages = [['en']]
+        #     extracted_text = {}
+        #     try:
+        #         img_preprocessed = preprocess_image(downloaded_image_path)
+        #         for lang in languages:
+        #             reader = easyocr.Reader(lang)
+        #             result = reader.readtext(img_preprocessed, paragraph="False")
+        #             extracted_text = ' '.join([text[1] for text in result])
+        #         logging.info(f"Request id : {request_id} -> Extracted Text EasyOCR: {extracted_text}")
+        #         return extracted_text
+        #     except Exception as e:
+        #         logging.error(f"Request id : {request_id} -> Error: {e}")
+        #         return f"error: {str(e)}"
         try:
-            text_result = ""
+            # text_result = ""
             text_result_tesseract = process_image_tesseract(self.downloaded_file_path)
-            text_result_easyocr = process_image_easyocr(self.downloaded_file_path)
-            if text_result_tesseract.strip() != "" and len(text_result_tesseract) > len(text_result_easyocr):
-                text_result = text_result_tesseract.strip()
-            else:
-                text_result = text_result_easyocr.strip()
+            # text_result_easyocr = process_image_easyocr(self.downloaded_file_path)
+            # if text_result_tesseract.strip() != "" and len(text_result_tesseract) > len(text_result_easyocr):
+            #     text_result = text_result_tesseract.strip()
+            # else:
+            #     text_result = text_result_easyocr.strip()
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
 
-        return text_result
+        return text_result_tesseract
