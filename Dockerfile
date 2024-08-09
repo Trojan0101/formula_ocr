@@ -35,5 +35,5 @@ COPY . .
 EXPOSE 8080
 
 # Command to run while docker is ran
-CMD [ "sh", "-c", "nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &" ]
-# CMD [ "sh", "-c", "uwsgi --http :8080 --module app:app" ]
+# CMD [ "sh", "-c", "nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &" ]
+CMD [ "sh", "-c", "uwsgi --http :8080 --module app:app" ]
