@@ -25,5 +25,5 @@ class LatexExtractorMixed:
             logging.info(f"Request id : {request_id} -> Extracted: {latex_mixed_result}")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
-            return {"error": str(e)}
+            return f"error: {str(e)}"
         return latex_mixed_result

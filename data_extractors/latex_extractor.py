@@ -4,7 +4,7 @@ Author: Trojan
 Date: 27-06-2024
 """
 import os
-from typing import Any
+from typing import Any, Union
 import logging
 
 
@@ -16,7 +16,7 @@ class LatexExtractor:
         self.latex_model = model
         self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
 
-    def convert_image_to_latex(self, request_id: str) -> dict:
+    def convert_image_to_latex(self, request_id: str) -> Union[str, Any]:
         response_object = None
 
         def process_image(downloaded_image_path):
@@ -33,6 +33,6 @@ class LatexExtractor:
             logging.info(f"Request id : {request_id} -> latex_result: {latex_result}")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
-            return {"error": str(e)}
+            return f"error: {str(e)}"
 
         return latex_result

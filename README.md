@@ -2,6 +2,8 @@
 
 **Steps to follow:**
 
+**Using general methodology:**
+
 1) Clone the repo into formula_ocr_main directory:
     ```bash
      git clone https://github.com/Trojan0101/formula_ocr.git
@@ -15,10 +17,7 @@
  
 3) Copy tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
     ```bash
-    git clone https://github.com/tesseract-ocr/tessdata.git
-    ```
-    ```bash
-    cd tesseract-ocr/tessdata
+    cd data_extractors/tesseract_ocr/tessdata
     ```
     ```bash
     mv chi_sim.traineddata chi_tra.traineddata kor.traineddata jpn.traineddata eng.traineddata path/to/tessdata
@@ -56,6 +55,23 @@
     ```bash
     nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
      ```
+
+**Using docker:**
+
+1) Load the Docker Image from the Tar File:
+    ```bash
+    docker load -i docker_images/formula_ocr_docker_linux.tar
+    ```
+
+2) Verify the Image is Loaded:
+    ```bash
+    docker images
+    ```
+
+3) Run a Container from the Image [Create `formula_ocr_log` directory]:
+    ```bash
+    docker run -p 8080:8080 -v /formula_ocr_log:/formula_ocr_docker --name ocr formula_ocr_docker
+    ```
 
 **Notes:**
 
