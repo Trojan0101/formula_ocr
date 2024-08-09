@@ -55,6 +55,9 @@
     ```bash
     nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
      ```
+    ```bash
+    disown
+    ```
 
 **Using docker:**
 
