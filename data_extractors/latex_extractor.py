@@ -1,34 +1,29 @@
 """
-Title: LatexExtractor
+Title: LatexExtractorMixed
 Author: Trojan
 Date: 27-06-2024
 """
-import os
-from typing import Any, Union
 import logging
+import os
+from typing import Any
 
+from PIL import Image
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class LatexExtractor:
-    def __init__(self, model: Any):
-        self.latex_model = model
+    def __init__(self, latex_model: Any):
+        self.latex_model_mixed = latex_model
         self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
 
-    def convert_image_to_latex(self, request_id: str) -> Union[str, Any]:
-        response_object = None
-
-        def process_image(downloaded_image_path):
-            try:
-                latex_result, latex_elapse = self.latex_model(downloaded_image_path)
-                logging.info(f"Request id : {request_id} -> Extracted Text LatexOCR: {latex_result}")
-                return latex_result, latex_elapse
-            except Exception as e:
-                logging.error(f"Request id : {request_id} -> Error with exception: {e}")
-                return "Error: Image error!!!", None
-
-        latex_result, latex_elapse = process_image(self.downloaded_file_path)
-        logging.info(f"Request id : {request_id} -> latex_result: {latex_result}")
-
-        return latex_result
+    def recognize_image(self, request_id: str):
+        """Recognize text in the given image and optionally save the result."""
+        try:
+            image = Image.open(self.downloaded_file_path).convert('RGB')
+            latex_mixed_result = self.latex_model_mixed.recognize(image)
+            logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {latex_mixed_result}")
+        except Exception as e:
+            logging.error(f"Request id : {request_id} -> Error with exception: {e}")
+            return f"error: {str(e)}"
+        return latex_mixed_result
