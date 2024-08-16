@@ -115,7 +115,7 @@ def convert_text():
         ascii_result = ""
 
         text_extractor = TextExtractor()
-        text_result = text_extractor.convert_image_to_text(request_id=request_id)
+        text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
 
         latex_extractor = LatexExtractor(latex_model=app.latex_model)
         latex_styled_result = latex_extractor.recognize_image(request_id=request_id)
@@ -129,14 +129,11 @@ def convert_text():
                 "version": app.api_version,
                 "image_width": app.image_width,
                 "image_height": app.image_height,
+                "isprinted": not is_handwritten,
+                "ishandwritten": is_handwritten,
                 "text": text_result,
                 "latex_styled": latex_styled_result,
-                "data": [
-                    {
-                        "type": "asciimath",
-                        "value": ascii_result
-                    }
-                ]
+                "data": ascii_result
             }
             return jsonify(response_dict)
         elif "text" in app.formats and "data" not in app.formats:
@@ -145,6 +142,8 @@ def convert_text():
                 "version": app.api_version,
                 "image_width": app.image_width,
                 "image_height": app.image_height,
+                "isprinted": not is_handwritten,
+                "ishandwritten": is_handwritten,
                 "text": text_result,
                 "latex_styled": latex_styled_result
             }
@@ -155,12 +154,9 @@ def convert_text():
                 "version": app.api_version,
                 "image_width": app.image_width,
                 "image_height": app.image_height,
-                "data": [
-                    {
-                        "type": "asciimath",
-                        "value": ascii_result
-                    }
-                ]
+                "isprinted": not is_handwritten,
+                "ishandwritten": is_handwritten,
+                "data": ascii_result
             }
             return jsonify(response_dict)
     except Exception as e:

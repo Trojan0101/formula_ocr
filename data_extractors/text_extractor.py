@@ -71,12 +71,14 @@ class TextExtractor:
                                     key=lambda k: text_confidence[k]['average_confidence']
                                     if text_confidence[k]['average_confidence'] is not None else -1)
                     best_text = text_confidence[best_lang]['text']
+                    best_confidence = text_confidence[best_lang]['average_confidence']
                     logging.info(f"Request id : {request_id} -> Extracted Text TesseractOCR: {best_text}")
-                    return best_text
+                    print(best_confidence)
+                    return best_text, best_confidence
 
             except Exception as e:
                 logging.error(f"Request id : {request_id} -> Error: {e}")
-                return f"error: {str(e)}"
+                return f"error: {str(e)}", None
 
         # def process_image_easyocr(downloaded_image_path):
         #     languages = [['en']]
@@ -94,7 +96,12 @@ class TextExtractor:
         #         return f"error: {str(e)}"
         try:
             # text_result = ""
-            text_result_tesseract = process_image_tesseract(self.downloaded_file_path)
+            is_handwritten = False
+            text_result_tesseract, text_result_confidence = process_image_tesseract(self.downloaded_file_path)
+            if int(text_result_confidence) >= 40:
+                is_handwritten = False
+            else:
+                is_handwritten = True
             # text_result_easyocr = process_image_easyocr(self.downloaded_file_path)
             # if text_result_tesseract.strip() != "" and len(text_result_tesseract) > len(text_result_easyocr):
             #     text_result = text_result_tesseract.strip()
@@ -104,4 +111,4 @@ class TextExtractor:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
 
-        return text_result_tesseract
+        return text_result_tesseract, is_handwritten
