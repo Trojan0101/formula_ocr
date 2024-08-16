@@ -121,7 +121,31 @@ def convert_text():
         latex_styled_result = latex_extractor.recognize_image(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
-        ascii_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
+        data_ascii_result: list = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
+
+        if text_result.strip() == "":
+            text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
+            text_result = "".join(text_result)
+
+        data_latex_result = {
+            "type": "latex",
+            "value": latex_styled_result
+        }
+
+        data_text_result = {
+            "type": "text",
+            "value": text_result
+        }
+
+        final_data_result = []
+
+        if app.include_text:
+            final_data_result.append(data_text_result)
+        if app.include_asciimath:
+            # data_ascii_result is already a list
+            final_data_result += data_ascii_result
+        if app.include_latex:
+            final_data_result.append(data_latex_result)
 
         if "text" in app.formats and "data" in app.formats:
             response_dict = {
@@ -133,7 +157,7 @@ def convert_text():
                 "ishandwritten": is_handwritten,
                 "text": text_result,
                 "latex_styled": latex_styled_result,
-                "data": ascii_result
+                "data": final_data_result
             }
             return jsonify(response_dict)
         elif "text" in app.formats and "data" not in app.formats:
@@ -156,7 +180,7 @@ def convert_text():
                 "image_height": app.image_height,
                 "isprinted": not is_handwritten,
                 "ishandwritten": is_handwritten,
-                "data": ascii_result
+                "data": final_data_result
             }
             return jsonify(response_dict)
     except Exception as e:

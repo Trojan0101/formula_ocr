@@ -98,7 +98,7 @@ class TextExtractor:
             # text_result = ""
             is_handwritten = False
             text_result_tesseract, text_result_confidence = process_image_tesseract(self.downloaded_file_path)
-            if int(text_result_confidence) >= 40:
+            if int(text_result_confidence) >= 30:
                 is_handwritten = False
             else:
                 is_handwritten = True
