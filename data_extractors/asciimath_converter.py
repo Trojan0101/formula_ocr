@@ -22,7 +22,11 @@ class AsciimathConverter:
             normal_equation = LatexNodes2Text().latex_to_text(latex_expression)
             equations = [eq.replace('?', '').strip() for eq in normal_equation.split('\n') if eq.strip()]
             for i, equation in enumerate(equations, start=1):
-                per_ascii_result = self.converter_model.translate(equation.strip(), from_file=False, pprint=False)
+                per_ascii_result = ""
+                try:
+                    per_ascii_result = self.converter_model.translate(equation.strip(), from_file=False, pprint=False)
+                except Exception as e:
+                    per_ascii_result = "Unrecognized Character"
                 per_result_dict = {"type": "asciimath", "value": per_ascii_result}
                 ascii_result.append(per_result_dict)
             return ascii_result
