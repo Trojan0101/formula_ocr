@@ -28,7 +28,18 @@ class MyFlaskApp(Flask):
     def __init__(self, import_name):
         super().__init__(import_name)
         self.api_version = "1.0"
-        self.latex_model = Pix2Text(languages=('en', 'ko', 'ch_sim', 'ch_tra', 'ja'))
+        pix_text_config_korean = {
+            'text_formula': {'languages': ('en', 'ko')},
+        }
+        self.latex_model_korean = Pix2Text.from_config(total_configs=pix_text_config_korean)
+        pix_text_config_japanese = {
+            'text_formula': {'languages': ('en', 'ja')},
+        }
+        self.latex_model_japanese = Pix2Text.from_config(total_configs=pix_text_config_japanese)
+        pix_text_config_chinese = {
+            'text_formula': {'languages': ('en', 'ch_tra')},
+        }
+        self.latex_model_chinese = Pix2Text.from_config(total_configs=pix_text_config_chinese)
         logging.info("Math OCR Models Initialized!!!")
         self.tex2asciimath = Tex2ASCIIMath(log=False, inplace=True)
         logging.info("AsciiMath OCR Models Initialized!!!")
@@ -117,8 +128,10 @@ def convert_text():
         text_extractor = TextExtractor()
         text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
 
-        latex_extractor = LatexExtractor(latex_model=app.latex_model)
-        latex_styled_result = latex_extractor.recognize_image(request_id=request_id)
+        latex_extractor = LatexExtractor(latex_model_korean=app.latex_model_korean,
+                                         latex_model_japanese=app.latex_model_japanese,
+                                         latex_model_chinese=app.latex_model_chinese)
+        latex_styled_result, latex_confidence = latex_extractor.recognize_image(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result: list = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
@@ -153,11 +166,13 @@ def convert_text():
                 "version": app.api_version,
                 "image_width": app.image_width,
                 "image_height": app.image_height,
-                "isprinted": not is_handwritten,
-                "ishandwritten": is_handwritten,
+                "is_printed": not is_handwritten,
+                "is_handwritten": is_handwritten,
                 "text": text_result,
                 "latex_styled": latex_styled_result,
-                "data": final_data_result
+                "confidence": latex_confidence,
+                "data": final_data_result,
+                "url": app.image_url
             }
             return jsonify(response_dict)
         elif "text" in app.formats and "data" not in app.formats:
@@ -166,10 +181,12 @@ def convert_text():
                 "version": app.api_version,
                 "image_width": app.image_width,
                 "image_height": app.image_height,
-                "isprinted": not is_handwritten,
-                "ishandwritten": is_handwritten,
+                "is_printed": not is_handwritten,
+                "is_handwritten": is_handwritten,
                 "text": text_result,
-                "latex_styled": latex_styled_result
+                "latex_styled": latex_styled_result,
+                "confidence": latex_confidence,
+                "url": app.image_url
             }
             return jsonify(response_dict)
         elif "data" in app.formats and "text" not in app.formats:
@@ -178,9 +195,11 @@ def convert_text():
                 "version": app.api_version,
                 "image_width": app.image_width,
                 "image_height": app.image_height,
-                "isprinted": not is_handwritten,
-                "ishandwritten": is_handwritten,
-                "data": final_data_result
+                "is_printed": not is_handwritten,
+                "is_handwritten": is_handwritten,
+                "data": final_data_result,
+                "confidence": latex_confidence,
+                "url": app.image_url
             }
             return jsonify(response_dict)
     except Exception as e:
@@ -191,7 +210,8 @@ def convert_text():
             "version": app.api_version,
             "image_width": app.image_width,
             "image_height": app.image_height,
-            "error": error
+            "error": error,
+            "url": app.image_url
         }
 
         return jsonify(response_dict)
