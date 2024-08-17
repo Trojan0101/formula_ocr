@@ -29,7 +29,10 @@ class LatexExtractor:
             for model in self.models:
                 count += 1
                 latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
-                latex_result = model.recognize_text_formula(image, file_type='text_formula')
+                latex_result = ""
+                for data in latex_data:
+                    latex_result += data.get("text", "")
+                # latex_result = model.recognize_text_formula(image, file_type='text_formula')
                 total_score = 0
                 total_dicts = len(latex_data)
                 for data in latex_data:
