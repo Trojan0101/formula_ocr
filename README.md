@@ -16,7 +16,8 @@
      ```
  
 3) Move tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
-   * Use WinScp to move files to the server
+
+   * Use WinScp to move files to the server from `https://github.com/tesseract-ocr/tessdata/tree/main`
 
 4) Install dependencies:
     ```bash
