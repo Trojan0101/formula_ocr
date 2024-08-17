@@ -40,18 +40,17 @@
     pip install uwsgi
      ```
 
-5) Modify minimize_image method [`Substitute size_tuple in the next line`]:
+5) Move modified utils.py to rapid_latex_ocr utils.py file:
     ```bash
-     cd formula_ocr_env/<python_version>/site_packages/rapid_latex_ocr/
+     mv modified_site_packages/rapid_latex_ocr/utils.py formula_ocr_env/<python_version>/site_packages/rapid_latex_ocr/utils.py
     ```
-    ```bash
-     nano utils.py
-     ```
-     ```python
-     size_tuple = tuple(size.astype(int))
-      ```
 
-6) Run:
+6) Install missing libraries:
+   ```bash
+   sudo apt-get install libgl1-mesa-glx
+   ```
+   
+7) Run:
     ```bash
     nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
      ```
