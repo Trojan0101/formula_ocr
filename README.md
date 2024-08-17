@@ -15,13 +15,8 @@
      mkdir downloaded_images
      ```
  
-3) Copy tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
-    ```bash
-    cd data_extractors/tesseract_ocr/tessdata
-    ```
-    ```bash
-    mv chi_sim.traineddata chi_tra.traineddata kor.traineddata jpn.traineddata eng.traineddata path/to/tessdata
-     ```
+3) Move tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
+   * Use WinScp to move files to the server
 
 4) Install dependencies:
     ```bash
