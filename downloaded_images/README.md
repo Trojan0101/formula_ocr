@@ -1,0 +1,1 @@
+# Folder `downloaded_images` is required to download the images from the url and save it for processing.
