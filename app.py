@@ -28,6 +28,7 @@ class MyFlaskApp(Flask):
     def __init__(self, import_name):
         super().__init__(import_name)
         self.api_version = "1.0"
+        self.latex_model_english = Pix2Text()
         pix_text_config_korean = {
             'text_formula': {'languages': ('en', 'ko')},
         }
@@ -36,10 +37,14 @@ class MyFlaskApp(Flask):
             'text_formula': {'languages': ('en', 'ja')},
         }
         self.latex_model_japanese = Pix2Text.from_config(total_configs=pix_text_config_japanese)
-        pix_text_config_chinese = {
+        pix_text_config_chinese_sim = {
+            'text_formula': {'languages': ('en', 'ch_sim')},
+        }
+        self.latex_model_chinese_sim = Pix2Text.from_config(total_configs=pix_text_config_chinese_sim)
+        pix_text_config_chinese_tra = {
             'text_formula': {'languages': ('en', 'ch_tra')},
         }
-        self.latex_model_chinese = Pix2Text.from_config(total_configs=pix_text_config_chinese)
+        self.latex_model_chinese_tra = Pix2Text.from_config(total_configs=pix_text_config_chinese_tra)
         logging.info("Math OCR Models Initialized!!!")
         self.tex2asciimath = Tex2ASCIIMath(log=False, inplace=True)
         logging.info("AsciiMath OCR Models Initialized!!!")
@@ -128,9 +133,13 @@ def convert_text():
         text_extractor = TextExtractor()
         text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
 
-        latex_extractor = LatexExtractor(latex_model_korean=app.latex_model_korean,
-                                         latex_model_japanese=app.latex_model_japanese,
-                                         latex_model_chinese=app.latex_model_chinese)
+        latex_extractor = LatexExtractor(
+            latex_model_english=app.latex_model_english,
+            latex_model_korean=app.latex_model_korean,
+            latex_model_japanese=app.latex_model_japanese,
+            latex_model_chinese_sim=app.latex_model_chinese_sim,
+            latex_model_chinese_tra=app.latex_model_chinese_tra
+        )
         latex_styled_result, latex_confidence = latex_extractor.recognize_image(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)

@@ -48,7 +48,7 @@ class TextExtractor:
             return sharpened_image
 
         def process_image_tesseract(downloaded_image_path):
-            languages = [['eng'], ['eng', 'jpn'], ['eng', 'chi_sim', 'chi_tra'], ['eng', 'kor']]
+            languages = [['eng'], ['eng', 'kor'], ['eng', 'jpn'], ['eng', 'chi_sim'], ['eng', 'chi_tra']]
             text_confidence = {}
             try:
                 img_preprocessed = preprocess_image(downloaded_image_path)
@@ -79,34 +79,13 @@ class TextExtractor:
             except Exception as e:
                 logging.error(f"Request id : {request_id} -> Error: {e}")
                 return f"error: {str(e)}", None
-
-        # def process_image_easyocr(downloaded_image_path):
-        #     languages = [['en']]
-        #     extracted_text = {}
-        #     try:
-        #         img_preprocessed = preprocess_image(downloaded_image_path)
-        #         for lang in languages:
-        #             reader = easyocr.Reader(lang)
-        #             result = reader.readtext(img_preprocessed, paragraph="False")
-        #             extracted_text = ' '.join([text[1] for text in result])
-        #         logging.info(f"Request id : {request_id} -> Extracted Text EasyOCR: {extracted_text}")
-        #         return extracted_text
-        #     except Exception as e:
-        #         logging.error(f"Request id : {request_id} -> Error: {e}")
-        #         return f"error: {str(e)}"
         try:
-            # text_result = ""
             is_handwritten = False
             text_result_tesseract, text_result_confidence = process_image_tesseract(self.downloaded_file_path)
             if int(text_result_confidence) >= 10:
                 is_handwritten = False
             else:
                 is_handwritten = True
-            # text_result_easyocr = process_image_easyocr(self.downloaded_file_path)
-            # if text_result_tesseract.strip() != "" and len(text_result_tesseract) > len(text_result_easyocr):
-            #     text_result = text_result_tesseract.strip()
-            # else:
-            #     text_result = text_result_easyocr.strip()
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"

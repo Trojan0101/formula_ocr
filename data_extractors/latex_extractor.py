@@ -13,11 +13,15 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 class LatexExtractor:
-    def __init__(self, latex_model_korean: Any, latex_model_japanese: Any, latex_model_chinese: Any):
+    def __init__(self, latex_model_english: Any, latex_model_korean: Any,
+                 latex_model_japanese: Any, latex_model_chinese_sim: Any, latex_model_chinese_tra: Any):
+        self.latex_model_english = latex_model_english
         self.latex_model_korean = latex_model_korean
         self.latex_model_japanese = latex_model_japanese
-        self.latex_model_chinese = latex_model_chinese
-        self.models = [self.latex_model_korean, self.latex_model_japanese, self.latex_model_chinese]
+        self.latex_model_chinese_sim = latex_model_chinese_sim
+        self.latex_model_chinese_tra = latex_model_chinese_tra
+        self.models = [self.latex_model_english, self.latex_model_korean, self.latex_model_japanese,
+                       self.latex_model_chinese_sim, self.latex_model_chinese_tra]
         self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
 
     def recognize_image(self, request_id: str):
