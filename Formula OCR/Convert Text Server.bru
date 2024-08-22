@@ -1,0 +1,22 @@
+meta {
+  name: Convert Text Server
+  type: http
+  seq: 2
+}
+
+post {
+  url: http:\\54.180.95.36:8080\convert_text
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "src": "https://jollydays.platinum24.net/mathpix/ch/ch1.png",
+    "formats": ["text", "data"],
+    "data_options": {
+      "include_asciimath": true,
+      "include_latex": true
+    }
+  }
+}

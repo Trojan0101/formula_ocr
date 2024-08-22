@@ -1,0 +1,22 @@
+meta {
+  name: Convert Text Local
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:5000/convert_text
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "src": "https://jollydays.platinum24.net/mathpix/ch/ch1.png",
+    "formats": ["text", "data"],
+    "data_options": {
+      "include_asciimath": true,
+      "include_latex": true
+    }
+  }
+}
