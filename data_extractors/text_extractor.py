@@ -19,8 +19,9 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 class TextExtractor:
 
-    def __init__(self):
+    def __init__(self, language: list):
         self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
+        self.language = language
 
     def convert_image_to_text(self, request_id: str) -> Union[str, Any]:
         response_object = None
@@ -48,44 +49,19 @@ class TextExtractor:
             return sharpened_image
 
         def process_image_tesseract(downloaded_image_path):
-            languages = [['eng'], ['eng', 'kor'], ['eng', 'jpn'], ['eng', 'chi_sim'], ['eng', 'chi_tra']]
-            text_confidence = {}
             try:
                 img_preprocessed = preprocess_image(downloaded_image_path)
-                for language in languages:
-                    config_eng = f'--oem 3 --psm 3 -l {"+".join(language)}'
+                config_eng = f'--oem 3 --psm 3 -l {"+".join(self.language)}'
 
-                    ocr_data_str = pytesseract.image_to_data(img_preprocessed, config=config_eng)
-                    ocr_data_io = StringIO(ocr_data_str)
-                    ocr_data = pd.read_csv(ocr_data_io, delimiter='\t')
-
-                    extracted_text = ' '.join(ocr_data['text'].dropna().tolist())
-                    confidence_scores = ocr_data['conf'].dropna().astype(float)
-                    average_confidence = confidence_scores.mean() if not confidence_scores.empty else None
-                    text_confidence[f'Language: {"+".join(language)}'] = {
-                        'text': extracted_text,
-                        'average_confidence': average_confidence
-                    }
-                if text_confidence:
-                    best_lang = max(text_confidence,
-                                    key=lambda k: text_confidence[k]['average_confidence']
-                                    if text_confidence[k]['average_confidence'] is not None else -1)
-                    best_text = text_confidence[best_lang]['text']
-                    best_confidence = text_confidence[best_lang]['average_confidence']
-                    logging.info(f"Request id : {request_id} -> Extracted Text TesseractOCR: {best_text}")
-                    print(best_confidence)
-                    return best_text, best_confidence
-
+                ocr_data_str = pytesseract.image_to_string(img_preprocessed, config=config_eng)
+                return ocr_data_str
             except Exception as e:
                 logging.error(f"Request id : {request_id} -> Error: {e}")
-                return f"error: {str(e)}", None
+                return f"error: {str(e)}"
+
         try:
             is_handwritten = False
-            text_result_tesseract, text_result_confidence = process_image_tesseract(self.downloaded_file_path)
-            if int(text_result_confidence) >= 10:
-                is_handwritten = False
-            else:
-                is_handwritten = True
+            text_result_tesseract = process_image_tesseract(self.downloaded_file_path)
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"

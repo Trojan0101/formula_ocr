@@ -130,9 +130,6 @@ def convert_text():
         latex_styled_result = ""
         ascii_result = ""
 
-        text_extractor = TextExtractor()
-        text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
-
         latex_extractor = LatexExtractor(
             latex_model_english=app.latex_model_english,
             latex_model_korean=app.latex_model_korean,
@@ -140,7 +137,10 @@ def convert_text():
             latex_model_chinese_sim=app.latex_model_chinese_sim,
             latex_model_chinese_tra=app.latex_model_chinese_tra
         )
-        latex_styled_result, latex_confidence = latex_extractor.recognize_image(request_id=request_id)
+        latex_styled_result, latex_confidence, tesseract_language = latex_extractor.recognize_image(request_id=request_id)
+
+        text_extractor = TextExtractor(language=tesseract_language)
+        text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result: list = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)

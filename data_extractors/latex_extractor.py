@@ -20,8 +20,13 @@ class LatexExtractor:
         self.latex_model_japanese = latex_model_japanese
         self.latex_model_chinese_sim = latex_model_chinese_sim
         self.latex_model_chinese_tra = latex_model_chinese_tra
-        self.models = [self.latex_model_english, self.latex_model_korean, self.latex_model_japanese,
-                       self.latex_model_chinese_sim, self.latex_model_chinese_tra]
+        self.model_to_tesseract_code = {
+            "self.latex_model_english": [["eng"], self.latex_model_english],
+            "self.latex_model_korean": [['eng', 'kor'], self.latex_model_korean],
+            "self.latex_model_japanese": [['eng', 'jpn'], self.latex_model_japanese],
+            "self.latex_model_chinese_sim": [['eng', 'chi_sim'], self.latex_model_chinese_sim],
+            "self.latex_model_chinese_tra": [['eng', 'chi_tra'], self.latex_model_chinese_tra],
+        }
         self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
 
     def recognize_image(self, request_id: str):
@@ -30,7 +35,9 @@ class LatexExtractor:
             image = Image.open(self.downloaded_file_path).convert('RGB')
             latex_results = {}
             count = 0
-            for model in self.models:
+            for latex_model in self.model_to_tesseract_code:
+                language = self.model_to_tesseract_code[latex_model][0]
+                model = self.model_to_tesseract_code[latex_model][1]
                 count += 1
                 latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
                 latex_result = ""
@@ -42,14 +49,16 @@ class LatexExtractor:
                 for data in latex_data:
                     total_score += data["score"]
                 final_confidence_score = total_score / total_dicts
-                latex_results[f"model_{count}"] = {"text": latex_result, "confidence": final_confidence_score}
+                latex_results[f"model_{count}"] = {"text": latex_result, "confidence": final_confidence_score,
+                                                   "language": language}
 
             highest_confidence_model = max(latex_results, key=lambda k: latex_results[k]['confidence'])
             highest_confidence = latex_results[highest_confidence_model]['confidence']
             highest_confidence_text = latex_results[highest_confidence_model]['text']
+            highest_confidence_language = latex_results[highest_confidence_model]['language']
 
             logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {highest_confidence_text}")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
-        return highest_confidence_text, highest_confidence
+        return highest_confidence_text, highest_confidence, highest_confidence_language
