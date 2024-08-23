@@ -57,6 +57,19 @@ class MyFlaskApp(Flask):
         # Image Source
         self.image_url: Optional[str] = ""
 
+        # Langugae
+        self.language: str = ""
+
+        # Language comparison
+        self.language_dictionary = {
+            # Keyword: [[tesseract_language], [pix2text language]]
+            "CHINESE_SIM": [["eng", "chi_sim"], self.latex_model_chinese_sim],
+            "CHINESE_TRA": [["eng", "chi_tra"], self.latex_model_chinese_tra],
+            "KOREAN": [["eng", "kor"], self.latex_model_korean],
+            "JAPANESE": [["eng", "jpn"], self.latex_model_japanese],
+            "ENGLISH": [["eng"], self.latex_model_english]
+        }
+
         # Formats (text and data)
         self.formats: List[str] = []
 
@@ -130,17 +143,25 @@ def convert_text():
         latex_styled_result = ""
         ascii_result = ""
 
-        latex_extractor = LatexExtractor(
-            latex_model_english=app.latex_model_english,
-            latex_model_korean=app.latex_model_korean,
-            latex_model_japanese=app.latex_model_japanese,
-            latex_model_chinese_sim=app.latex_model_chinese_sim,
-            latex_model_chinese_tra=app.latex_model_chinese_tra
-        )
-        latex_styled_result, latex_confidence, tesseract_language = latex_extractor.recognize_image(request_id=request_id)
+        if app.language is not None:
+            latex_extractor = LatexExtractor()
+            latex_styled_result, latex_confidence = latex_extractor.recognize_image_single_language(
+                model=app.language_dictionary[app.language][1], request_id=request_id, language=app.language)
 
-        text_extractor = TextExtractor(language=tesseract_language)
-        text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
+            text_extractor = TextExtractor(language=app.language_dictionary[app.language][0])
+            text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
+        else:
+            latex_extractor = LatexExtractor(
+                latex_model_english=app.latex_model_english,
+                latex_model_korean=app.latex_model_korean,
+                latex_model_japanese=app.latex_model_japanese,
+                latex_model_chinese_sim=app.latex_model_chinese_sim,
+                latex_model_chinese_tra=app.latex_model_chinese_tra
+            )
+            latex_styled_result, latex_confidence, tesseract_language = latex_extractor.recognize_image(request_id=request_id)
+
+            text_extractor = TextExtractor(language=tesseract_language)
+            text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result: list = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
@@ -229,6 +250,9 @@ def convert_text():
 def assign_values_from_request(request_data: dict):
     # Image Source
     app.image_url = request_data.get("src", None)
+
+    # Language
+    app.language = request_data.get("language", None)
 
     # Formats (text and data)
     app.formats = request_data.get("formats", [])

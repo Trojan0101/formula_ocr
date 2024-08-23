@@ -5,7 +5,7 @@ Date: 27-06-2024
 """
 import logging
 import os
-from typing import Any
+from typing import Any, Optional
 
 from PIL import Image
 
@@ -13,8 +13,9 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 class LatexExtractor:
-    def __init__(self, latex_model_english: Any, latex_model_korean: Any,
-                 latex_model_japanese: Any, latex_model_chinese_sim: Any, latex_model_chinese_tra: Any):
+    def __init__(self, latex_model_english: Optional[Any] = None, latex_model_korean: Optional[Any] = None,
+                 latex_model_japanese: Optional[Any] = None, latex_model_chinese_sim: Optional[Any] = None,
+                 latex_model_chinese_tra: Optional[Any] = None):
         self.latex_model_english = latex_model_english
         self.latex_model_korean = latex_model_korean
         self.latex_model_japanese = latex_model_japanese
@@ -43,7 +44,6 @@ class LatexExtractor:
                 latex_result = ""
                 for data in latex_data:
                     latex_result += data.get("text", "")
-                # latex_result = model.recognize_text_formula(image, file_type='text_formula')
                 total_score = 0
                 total_dicts = len(latex_data)
                 for data in latex_data:
@@ -62,3 +62,27 @@ class LatexExtractor:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
         return highest_confidence_text, highest_confidence, highest_confidence_language
+
+    def recognize_image_single_language(self, model: Any, request_id: str, language: str):
+        try:
+            image = Image.open(self.downloaded_file_path).convert('RGB')
+            latex_results = {}
+            latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
+            latex_result = ""
+            for data in latex_data:
+                latex_result += data.get("text", "")
+            total_score = 0
+            total_dicts = len(latex_data)
+            for data in latex_data:
+                total_score += data["score"]
+            final_confidence_score = total_score / total_dicts
+            latex_results[f"model_{language}"] = {"text": latex_result, "confidence": final_confidence_score,
+                                                   "language": language}
+
+            logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {latex_result}")
+
+        except Exception as e:
+            logging.error(f"Request id : {request_id} -> Error with exception: {e}")
+            return f"error: {str(e)}"
+        return latex_result, final_confidence_score
+
