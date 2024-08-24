@@ -54,14 +54,33 @@ class TextExtractor:
                 config_eng = f'--oem 3 --psm 3 -l {"+".join(self.language)}'
 
                 ocr_data_str = pytesseract.image_to_string(img_preprocessed, config=config_eng)
-                return ocr_data_str
+                return ocr_data_str, img_preprocessed
             except Exception as e:
                 logging.error(f"Request id : {request_id} -> Error: {e}")
                 return f"error: {str(e)}"
 
         try:
-            is_handwritten = False
-            text_result_tesseract = process_image_tesseract(self.downloaded_file_path)
+            text_result_tesseract, preprocessed_image = process_image_tesseract(self.downloaded_file_path)
+
+            try:
+                is_handwritten = False
+                num_characters = len(text_result_tesseract)
+                num_words = len(text_result_tesseract.split())
+
+                # Simple heuristic for handwritten vs printed text
+                char_count = len(text_result_tesseract.replace(' ', ''))
+
+                # Calculate average character width and height
+                height, width = preprocessed_image.shape
+                avg_char_width = width / num_characters if num_characters > 0 else 0
+                avg_char_height = height / len(text_result_tesseract.split()) if num_words > 0 else 0
+                print(avg_char_height, avg_char_width)
+                if avg_char_width < 20 and avg_char_height < 30:  # Arbitrary thresholds, adjust as needed
+                    is_handwritten = False
+                else:
+                    is_handwritten = True
+            except Exception as e:
+                is_handwritten = False
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
