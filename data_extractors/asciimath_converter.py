@@ -42,14 +42,14 @@ class AsciimathConverter:
                 per_ascii_result = self.converter_model.translate(latex_expression.strip(), from_file=False, pprint=False)
             except Exception as e:
                 per_ascii_result = "Unrecognized Character"
-                return [{"type": "asciimath", "value": per_ascii_result}]
+                return [{"type": "asciimath", "value": per_ascii_result}], normal_equation
             per_result_dict = {"type": "asciimath", "value": per_ascii_result}
             ascii_result.append(per_result_dict)
-            return ascii_result
+            return ascii_result, normal_equation
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error: Text is also present in math formula. Can't convert "
                           f"to asciimath.")
             if ascii_result:
-                return ascii_result
+                return ascii_result, normal_equation
             else:
-                return [{"type": "asciimath", "value": "Formula with Text. Conversion not available."}]
+                return [{"type": "asciimath", "value": "Formula with Text. Conversion not available."}], normal_equation

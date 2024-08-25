@@ -148,8 +148,8 @@ def convert_text():
             latex_styled_result, latex_confidence = latex_extractor.recognize_image_single_language(
                 model=app.language_dictionary[app.language][1], request_id=request_id, language=app.language)
 
-            text_extractor = TextExtractor(language=app.language_dictionary[app.language][0])
-            text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
+            # text_extractor = TextExtractor(language=app.language_dictionary[app.language][0])
+            # text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
         else:
             latex_extractor = LatexExtractor(
                 latex_model_english=app.latex_model_english,
@@ -160,11 +160,12 @@ def convert_text():
             )
             latex_styled_result, latex_confidence, tesseract_language = latex_extractor.recognize_image(request_id=request_id)
 
-            text_extractor = TextExtractor(language=tesseract_language)
-            text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
+            # text_extractor = TextExtractor(language=tesseract_language)
+            # text_result, is_handwritten = text_extractor.convert_image_to_text(request_id=request_id)
 
+        is_handwritten = False
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
-        data_ascii_result: list = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
+        data_ascii_result, text_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
 
         if text_result.strip() == "":
             text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
