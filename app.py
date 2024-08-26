@@ -138,6 +138,8 @@ def convert_text():
 
     if url_check is not None:
         return url_check
+    else:
+        pass
 
     # Start data extraction
     try:
