@@ -134,7 +134,10 @@ def convert_text():
     assign_values_from_request(request_data)
 
     # Check URL and download image
-    check_url_and_download_image(image_url=app.image_url, request_id=request_id)
+    url_check = check_url_and_download_image(image_url=app.image_url, request_id=request_id)
+
+    if url_check is not None:
+        return url_check
 
     # Start data extraction
     try:
@@ -310,6 +313,7 @@ def check_url_and_download_image(image_url: str, request_id: str):
                 f.write(response.content)
             with Image.open(app.downloaded_file_path) as img:
                 app.image_width, app.image_height = img.size
+            return None
         except Exception as e:
             error = str(e)
             logging.error(f"Request id : {request_id} -> Error with exception: {error}")
