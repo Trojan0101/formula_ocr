@@ -9,13 +9,7 @@
      git clone https://github.com/Trojan0101/formula_ocr.git
      ```
 
-2) Create a directory for file downloading:
-    ```bash
-     cd formula_ocr
-     mkdir downloaded_images
-     ```
-
-3) Install dependencies:
+2) Install dependencies:
     ```bash
     pip install virtualenv
     ```
@@ -32,17 +26,17 @@
     pip install uwsgi
      ```
 
-4) Move modified utils.py to rapid_latex_ocr utils.py file:
+3) Move modified utils.py to rapid_latex_ocr utils.py file:
     ```bash
      mv modified_site_packages/rapid_latex_ocr/utils.py formula_ocr_env/<python_version>/site_packages/rapid_latex_ocr/utils.py
     ```
 
-5) Install missing libraries:
+4) Install missing libraries:
    ```bash
    sudo apt-get install libgl1-mesa-glx
    ```
    
-6) Run:
+5) Run:
     ```bash
     nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
      ```
