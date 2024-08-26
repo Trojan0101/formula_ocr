@@ -14,12 +14,8 @@
      cd formula_ocr
      mkdir downloaded_images
      ```
- 
-3) Move tesseract trained datasets for english, japanese, korean, chinese traditional, and chinese simplified to tessdata path in server:
 
-   * Use WinScp to move files to the server from `https://github.com/tesseract-ocr/tessdata/tree/main`
-
-4) Install dependencies:
+3) Install dependencies:
     ```bash
     pip install virtualenv
     ```
@@ -36,17 +32,17 @@
     pip install uwsgi
      ```
 
-5) Move modified utils.py to rapid_latex_ocr utils.py file:
+4) Move modified utils.py to rapid_latex_ocr utils.py file:
     ```bash
      mv modified_site_packages/rapid_latex_ocr/utils.py formula_ocr_env/<python_version>/site_packages/rapid_latex_ocr/utils.py
     ```
 
-6) Install missing libraries:
+5) Install missing libraries:
    ```bash
    sudo apt-get install libgl1-mesa-glx
    ```
    
-7) Run:
+6) Run:
     ```bash
     nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
      ```
@@ -73,7 +69,3 @@
     ```bash
     docker run -p 8080:8080 formula_ocr:latest
     ```
-
-**Notes:**
-
-1) Path to tessdata can be `/usr/local/share/tessdata` or `/usr/share/tessdata`
