@@ -56,19 +56,22 @@
 
 **Using docker:**
 
-1) Load the Docker Image from the Tar File:
+1) Create the Docker Image:
     ```bash
-    docker load -i docker_images/formula_ocr_docker_linux.tar
+    cd formula_ocr
+    ```
+    ```bash
+    docker build -t formula_ocr:latest .
     ```
 
-2) Verify the Image is Loaded:
+2) Verify the image:
     ```bash
     docker images
     ```
 
-3) Run a Container from the Image [Create `formula_ocr_log` directory]:
+3) Run a Container from the Image:
     ```bash
-    docker run -p 8080:8080 -v /formula_ocr_log:/formula_ocr_docker --name ocr formula_ocr_docker
+    docker run -p 8080:8080 formula_ocr:latest
     ```
 
 **Notes:**
