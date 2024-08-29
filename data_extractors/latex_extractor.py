@@ -97,12 +97,9 @@ class LatexExtractor:
             original = image.copy()
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-
-            # Dilate with horizontal kernel
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 10))
             dilate = cv2.dilate(thresh, kernel, iterations=2)
 
-            # Find contours and filter non-diagram contours
             cnts, _ = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             for c in cnts:
                 x, y, w, h = cv2.boundingRect(c)
@@ -110,7 +107,6 @@ class LatexExtractor:
                 if w / h > 2 and area > 10000:
                     cv2.drawContours(dilate, [c], -1, (0, 0, 0), -1)
 
-            # Extract bounding boxes for each diagram
             boxes = []
             cnts, _ = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             for c in cnts:
@@ -121,15 +117,10 @@ class LatexExtractor:
                 logging.error(f"Request id : {request_id} -> No diagrams found in this image.")
                 return
 
-            # Remove each diagram by drawing black rectangles
             for box in boxes:
                 x, y, x2, y2 = box
-                cv2.rectangle(image, (x, y), (x2, y2), (255, 255, 255), -1)  # Fill with black
+                cv2.rectangle(image, (x, y), (x2, y2), (255, 255, 255), -1)
 
-            # Display the modified image
-            # cv2.imshow('Modified Image', image)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
             cv2.imwrite(self.downloaded_file_path, image)
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Not able to extract diagrams with error {e}.")
