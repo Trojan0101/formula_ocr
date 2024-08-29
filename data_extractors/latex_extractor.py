@@ -121,7 +121,11 @@ class LatexExtractor:
                 x, y, x2, y2 = box
                 cv2.rectangle(image, (x, y), (x2, y2), (255, 255, 255), -1)
 
-            cv2.imwrite(self.downloaded_file_path, image)
+            try:
+                cv2.imwrite(self.downloaded_file_path, image)
+                logging.error(f"Request id : {request_id} -> Diagrams found and removed from image.")
+            except Exception as e:
+                logging.error(f"Request id : {request_id} -> Diagrams found, but cannot be removed.")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Not able to extract diagrams with error {e}.")
             pass
