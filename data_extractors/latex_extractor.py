@@ -67,7 +67,7 @@ class LatexExtractor:
 
     def recognize_image_single_language(self, model: Any, request_id: str, language: str):
         try:
-            self.extract_and_remove_diagrams_from_image(request_id)
+            # self.extract_and_remove_diagrams_from_image(request_id)
             image = Image.open(self.downloaded_file_path).convert('RGB')
             latex_results = {}
             latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
