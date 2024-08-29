@@ -122,6 +122,8 @@ class LatexExtractor:
                 cv2.rectangle(image, (x, y), (x2, y2), (255, 255, 255), -1)
 
             try:
+                cv2.imshow("image", image)
+                cv2.waitKey(2)
                 cv2.imwrite(self.downloaded_file_path, image)
                 logging.error(f"Request id : {request_id} -> Diagrams found and removed from image.")
             except Exception as e:
