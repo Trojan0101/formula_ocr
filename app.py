@@ -161,7 +161,7 @@ def convert_text():
                 latex_model_chinese_sim=app.latex_model_chinese_sim,
                 latex_model_chinese_tra=app.latex_model_chinese_tra
             )
-            latex_styled_result, latex_confidence, tesseract_language = latex_extractor.recognize_image(request_id=request_id)
+            latex_styled_result, latex_confidence = latex_extractor.recognize_image(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result, text_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)

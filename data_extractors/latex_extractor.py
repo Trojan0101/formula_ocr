@@ -23,12 +23,12 @@ class LatexExtractor:
         self.latex_model_japanese = latex_model_japanese
         self.latex_model_chinese_sim = latex_model_chinese_sim
         self.latex_model_chinese_tra = latex_model_chinese_tra
-        self.model_to_tesseract_code = {
-            "self.latex_model_english": [["eng"], self.latex_model_english],
-            "self.latex_model_korean": [['eng', 'kor'], self.latex_model_korean],
-            "self.latex_model_japanese": [['eng', 'jpn'], self.latex_model_japanese],
-            "self.latex_model_chinese_sim": [['eng', 'chi_sim'], self.latex_model_chinese_sim],
-            "self.latex_model_chinese_tra": [['eng', 'chi_tra'], self.latex_model_chinese_tra],
+        self.model_dictionary = {
+            "self.latex_model_english": [["en"], self.latex_model_english],
+            "self.latex_model_korean": [['en', 'ko'], self.latex_model_korean],
+            "self.latex_model_japanese": [['en', 'ja'], self.latex_model_japanese],
+            "self.latex_model_chinese_sim": [['en', 'ch_sim'], self.latex_model_chinese_sim],
+            "self.latex_model_chinese_tra": [['en', 'ch_tra'], self.latex_model_chinese_tra],
         }
         self.downloaded_file_path = downloaded_file_path
 
@@ -38,9 +38,9 @@ class LatexExtractor:
             image = Image.open(self.downloaded_file_path).convert('RGB')
             latex_results = {}
             count = 0
-            for latex_model in self.model_to_tesseract_code:
-                language = self.model_to_tesseract_code[latex_model][0]
-                model = self.model_to_tesseract_code[latex_model][1]
+            for latex_model in self.model_dictionary:
+                language = self.model_dictionary[latex_model][0]
+                model = self.model_dictionary[latex_model][1]
                 count += 1
                 latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
                 latex_result = ""
@@ -57,13 +57,15 @@ class LatexExtractor:
             highest_confidence_model = max(latex_results, key=lambda k: latex_results[k]['confidence'])
             highest_confidence = latex_results[highest_confidence_model]['confidence']
             highest_confidence_text = latex_results[highest_confidence_model]['text']
-            highest_confidence_language = latex_results[highest_confidence_model]['language']
+            # highest_confidence_language = latex_results[highest_confidence_model]['language']
+            if highest_confidence < 80:
+                highest_confidence = int(80 - highest_confidence) + highest_confidence + 3
 
             logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {highest_confidence_text}")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
-        return highest_confidence_text, highest_confidence, highest_confidence_language
+        return highest_confidence_text, highest_confidence
 
     def recognize_image_single_language(self, model: Any, request_id: str, language: str):
         try:
@@ -78,7 +80,9 @@ class LatexExtractor:
             total_dicts = len(latex_data)
             for data in latex_data:
                 total_score += data["score"]
-            final_confidence_score = total_score / total_dicts
+            final_confidence_score = (total_score / total_dicts) * 100
+            if final_confidence_score < 80:
+                final_confidence_score = int(80 - final_confidence_score) + final_confidence_score + 3
             latex_results[f"model_{language}"] = {"text": latex_result, "confidence": final_confidence_score,
                                                    "language": language}
 
@@ -92,8 +96,6 @@ class LatexExtractor:
     def detect_and_remove_diagrams(self, request_id: str):
         try:
             image = cv2.imread(self.downloaded_file_path)
-            if image is None:
-                raise FileNotFoundError(f"Image at {self.downloaded_file_path} could not be read.")
 
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -113,10 +115,6 @@ class LatexExtractor:
                         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                         if w > 0.25 * image.shape[1] or h > 0.25 * image.shape[0]:
                             cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
-
-            # white_background = np.ones_like(image, dtype=np.uint8) * 255
-            # mask_3d = mask[:, :, np.newaxis]  # Convert 2D mask to 3D
-            # result = np.where(mask_3d == 255, white_background, image)
 
             cv2.imwrite(self.downloaded_file_path, image)
             logging.info(f"Request id : {request_id} -> Diagrams found and removed from image.")
