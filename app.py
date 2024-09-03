@@ -6,11 +6,11 @@ Date: 25-06-2024
 import json
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from pix2text import Pix2Text
 from PIL import Image
 from py_asciimath.translator.translator import Tex2ASCIIMath
@@ -49,7 +49,7 @@ class MyFlaskApp(Flask):
         logging.info("AsciiMath OCR Models Initialized!!!")
 
         # Downloaded image path
-        self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
+        self.downloaded_file_path = os.path.join("downloaded_images")
         self.image_width = None
         self.image_height = None
 
@@ -133,10 +133,10 @@ def convert_text():
     assign_values_from_request(request_data)
 
     # Check URL and download image
-    url_check = check_url_and_download_image(image_url=app.image_url, request_id=request_id)
+    downloaded_file_path = check_url_and_download_image(image_url=app.image_url, request_id=request_id)
 
-    if url_check is not None:
-        return url_check
+    if isinstance(downloaded_file_path, dict):
+        return downloaded_file_path
     else:
         pass
 
@@ -149,11 +149,12 @@ def convert_text():
         ascii_result = ""
 
         if app.language is not None:
-            latex_extractor = LatexExtractor()
+            latex_extractor = LatexExtractor(downloaded_file_path)
             latex_styled_result, latex_confidence = latex_extractor.recognize_image_single_language(
                 model=app.language_dictionary[app.language], request_id=request_id, language=app.language)
         else:
             latex_extractor = LatexExtractor(
+                downloaded_file_path=downloaded_file_path,
                 latex_model_english=app.latex_model_english,
                 latex_model_korean=app.latex_model_korean,
                 latex_model_japanese=app.latex_model_japanese,
@@ -298,17 +299,18 @@ def assign_values_from_request(request_data: dict):
     app.data_long_frac = app.data_transforms.get("long_frac", False)
 
 
-def check_url_and_download_image(image_url: str, request_id: str):
+def check_url_and_download_image(image_url: str, request_id: str) -> Union[Response, str]:
     parsed_url = urlparse(image_url)
+    new_downloaded_file_path = app.downloaded_file_path + f"/{request_id}.png"
     if parsed_url.scheme and parsed_url.netloc:
         try:
             response = requests.get(image_url)
             response.raise_for_status()
-            with open(app.downloaded_file_path, 'wb') as f:
+            with open(new_downloaded_file_path, 'wb') as f:
                 f.write(response.content)
-            with Image.open(app.downloaded_file_path) as img:
+            with Image.open(new_downloaded_file_path) as img:
                 app.image_width, app.image_height = img.size
-            return None
+            return new_downloaded_file_path
         except Exception as e:
             error = str(e)
             logging.error(f"Request id : {request_id} -> Error with exception: {error}")

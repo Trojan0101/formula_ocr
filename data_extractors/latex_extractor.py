@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 class LatexExtractor:
-    def __init__(self, latex_model_english: Optional[Any] = None, latex_model_korean: Optional[Any] = None,
+    def __init__(self, downloaded_file_path: str, latex_model_english: Optional[Any] = None, latex_model_korean: Optional[Any] = None,
                  latex_model_japanese: Optional[Any] = None, latex_model_chinese_sim: Optional[Any] = None,
                  latex_model_chinese_tra: Optional[Any] = None):
         self.latex_model_english = latex_model_english
@@ -30,7 +30,7 @@ class LatexExtractor:
             "self.latex_model_chinese_sim": [['eng', 'chi_sim'], self.latex_model_chinese_sim],
             "self.latex_model_chinese_tra": [['eng', 'chi_tra'], self.latex_model_chinese_tra],
         }
-        self.downloaded_file_path = os.path.join("downloaded_images", "verification_image.png")
+        self.downloaded_file_path = downloaded_file_path
 
     def recognize_image(self, request_id: str):
         """Recognize text in the given image and optionally save the result."""
@@ -67,7 +67,7 @@ class LatexExtractor:
 
     def recognize_image_single_language(self, model: Any, request_id: str, language: str):
         try:
-            # self.extract_and_remove_diagrams_from_image(request_id)
+            self.detect_and_remove_diagrams(request_id)
             image = Image.open(self.downloaded_file_path).convert('RGB')
             latex_results = {}
             latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
@@ -89,45 +89,36 @@ class LatexExtractor:
             return f"error: {str(e)}"
         return latex_result, final_confidence_score
 
-    def extract_and_remove_diagrams_from_image(self, request_id: str):
-        # Load image
-        image = cv2.imread(self.downloaded_file_path)
-
+    def detect_and_remove_diagrams(self, request_id: str):
         try:
-            original = image.copy()
+            image = cv2.imread(self.downloaded_file_path)
+            if image is None:
+                raise FileNotFoundError(f"Image at {self.downloaded_file_path} could not be read.")
+
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 10))
-            dilate = cv2.dilate(thresh, kernel, iterations=2)
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            edges = cv2.Canny(blurred, 50, 150)
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            cnts, _ = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            for c in cnts:
-                x, y, w, h = cv2.boundingRect(c)
-                area = cv2.contourArea(c)
-                if w / h > 2 and area > 10000:
-                    cv2.drawContours(dilate, [c], -1, (0, 0, 0), -1)
+            mask = np.zeros(image.shape[:2], dtype=np.uint8)
 
-            boxes = []
-            cnts, _ = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            for c in cnts:
-                x, y, w, h = cv2.boundingRect(c)
-                boxes.append([x, y, x + w, y + h])
+            # Refine contours to filter out text or other small objects
+            for contour in contours:
+                area = cv2.contourArea(contour)
+                if area > 500:
+                    x, y, w, h = cv2.boundingRect(contour)
+                    aspect_ratio = float(w) / h
+                    if aspect_ratio > 0.30:  # 0.60 worked somewhat well
+                        cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)  # White contours
+                        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        if w > 0.25 * image.shape[1] and h > 0.25 * image.shape[0]:
+                            cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
 
-            if not boxes:
-                logging.error(f"Request id : {request_id} -> No diagrams found in this image.")
-                return
+            # white_background = np.ones_like(image, dtype=np.uint8) * 255
+            # mask_3d = mask[:, :, np.newaxis]  # Convert 2D mask to 3D
+            # result = np.where(mask_3d == 255, white_background, image)
 
-            for box in boxes:
-                x, y, x2, y2 = box
-                cv2.rectangle(image, (x, y), (x2, y2), (255, 255, 255), -1)
-
-            try:
-                cv2.imshow("image", image)
-                cv2.waitKey(2)
-                cv2.imwrite(self.downloaded_file_path, image)
-                logging.error(f"Request id : {request_id} -> Diagrams found and removed from image.")
-            except Exception as e:
-                logging.error(f"Request id : {request_id} -> Diagrams found, but cannot be removed.")
+            cv2.imwrite(self.downloaded_file_path, image)
+            logging.info(f"Request id : {request_id} -> Diagrams found and removed from image.")
         except Exception as e:
-            logging.error(f"Request id : {request_id} -> Not able to extract diagrams with error {e}.")
-            pass
+            logging.error(f"Request id : {request_id} -> Error: {e}")
