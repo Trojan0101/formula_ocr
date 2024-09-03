@@ -111,7 +111,7 @@ class LatexExtractor:
                     if aspect_ratio > 0.30:  # 0.60 worked somewhat well
                         cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)  # White contours
                         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                        if w > 0.25 * image.shape[1] and h > 0.25 * image.shape[0]:
+                        if w > 0.25 * image.shape[1] or h > 0.25 * image.shape[0]:
                             cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
 
             # white_background = np.ones_like(image, dtype=np.uint8) * 255
