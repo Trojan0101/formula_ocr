@@ -95,6 +95,7 @@ class LatexExtractor:
 
     def detect_and_remove_diagrams(self, request_id: str):
         try:
+            to_write = False
             image = cv2.imread(self.downloaded_file_path)
 
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -113,11 +114,15 @@ class LatexExtractor:
                     if aspect_ratio > 0.30:  # 0.60 worked somewhat well
                         cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)  # White contours
                         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                        if w > 0.30 * image.shape[1] and h > 0.30 * image.shape[0]:
+                        if w > 0.25 * image.shape[1] and h > 0.25 * image.shape[0]:
                             if w < 0.75 * image.shape[1] and h < 0.75 * image.shape[0]:
                                 cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
-
-            cv2.imwrite(self.downloaded_file_path, image)
-            logging.info(f"Request id : {request_id} -> Diagrams found and removed from image.")
+                                to_write = True
+            
+            if to_write:
+                cv2.imwrite(self.downloaded_file_path, image)
+                logging.info(f"Request id : {request_id} -> Diagrams found and removed from image.")
+            else:
+                logging.info(f"Request id : {request_id} -> Diagrams not found.")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error: {e}")
