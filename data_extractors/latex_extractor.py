@@ -58,8 +58,6 @@ class LatexExtractor:
             highest_confidence = latex_results[highest_confidence_model]['confidence']
             highest_confidence_text = latex_results[highest_confidence_model]['text']
             # highest_confidence_language = latex_results[highest_confidence_model]['language']
-            if highest_confidence < 80:
-                highest_confidence = int(80 - highest_confidence) + highest_confidence + 3
 
             logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {highest_confidence_text}")
         except Exception as e:
@@ -81,8 +79,7 @@ class LatexExtractor:
             for data in latex_data:
                 total_score += data["score"]
             final_confidence_score = (total_score / total_dicts) * 100
-            if final_confidence_score < 80:
-                final_confidence_score = int(80 - final_confidence_score) + final_confidence_score + 3
+
             latex_results[f"model_{language}"] = {"text": latex_result, "confidence": final_confidence_score,
                                                    "language": language}
 
@@ -114,7 +111,8 @@ class LatexExtractor:
                         cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)  # White contours
                         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                         if w > 0.25 * image.shape[1] or h > 0.25 * image.shape[0]:
-                            cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
+                            if w < 0.35 * image.shape[1] or h < 0.35 * image.shape[0]:
+                                cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
 
             cv2.imwrite(self.downloaded_file_path, image)
             logging.info(f"Request id : {request_id} -> Diagrams found and removed from image.")
