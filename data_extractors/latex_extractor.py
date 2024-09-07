@@ -78,7 +78,10 @@ class LatexExtractor:
             total_dicts = len(latex_data)
             for data in latex_data:
                 total_score += data["score"]
-            final_confidence_score = (total_score / total_dicts) * 100
+            if total_dicts != 0:
+                final_confidence_score = (total_score / total_dicts) * 100
+            if total_dicts == 0:
+                final_confidence_score = total_score * 100
 
             latex_results[f"model_{language}"] = {"text": latex_result, "confidence": final_confidence_score,
                                                    "language": language}
@@ -110,8 +113,8 @@ class LatexExtractor:
                     if aspect_ratio > 0.30:  # 0.60 worked somewhat well
                         cv2.drawContours(mask, [contour], -1, 255, thickness=cv2.FILLED)  # White contours
                         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                        if w > 0.25 * image.shape[1] or h > 0.25 * image.shape[0]:
-                            if w < 0.35 * image.shape[1] or h < 0.35 * image.shape[0]:
+                        if w > 0.30 * image.shape[1] and h > 0.30 * image.shape[0]:
+                            if w < 0.75 * image.shape[1] and h < 0.75 * image.shape[0]:
                                 cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
 
             cv2.imwrite(self.downloaded_file_path, image)
