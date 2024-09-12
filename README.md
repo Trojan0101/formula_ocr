@@ -26,17 +26,22 @@
     pip install uwsgi
      ```
 
-3) Move modified utils.py to rapid_latex_ocr utils.py file:
+3) Move modified utils.py to `rapid_latex_ocr/` utils.py file:
     ```bash
      mv modified_site_packages/rapid_latex_ocr/utils.py formula_ocr_env/<python_version>/site_packages/rapid_latex_ocr/utils.py
     ```
 
-4) Install missing libraries:
+4) Move modified pooling.py to `torch/nn/modules/` pooling.py file:
+    ```bash
+     mv modified_site_packages/torch/pooling.py formula_ocr_env/<python_version>/site_packages/torch/nn/modules/pooling.py
+    ```
+
+5) Install missing libraries:
    ```bash
    sudo apt-get install libgl1-mesa-glx
    ```
    
-5) Run:
+6) Run:
     ```bash
     nohup uwsgi --http :8080 --module app:app > formula_ocr_main.log 2>&1 &
      ```

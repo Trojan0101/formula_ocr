@@ -8,8 +8,11 @@ import os
 from typing import Any, Optional
 import cv2
 import numpy as np
+from math import exp
 
 from PIL import Image
+
+from ocrd_typegroups_classifier.typegroups_classifier import TypegroupsClassifier
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -35,6 +38,8 @@ class LatexExtractor:
     def recognize_image(self, request_id: str):
         """Recognize text in the given image and optionally save the result."""
         try:
+            self.detect_and_remove_diagrams(request_id)
+            is_handwritten = self.detect_is_handwritten(request_id)
             image = Image.open(self.downloaded_file_path).convert('RGB')
             latex_results = {}
             count = 0
@@ -63,11 +68,12 @@ class LatexExtractor:
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
-        return highest_confidence_text, highest_confidence
+        return highest_confidence_text, highest_confidence, is_handwritten
 
     def recognize_image_single_language(self, model: Any, request_id: str, language: str):
         try:
             self.detect_and_remove_diagrams(request_id)
+            is_handwritten = self.detect_is_handwritten(request_id)
             image = Image.open(self.downloaded_file_path).convert('RGB')
             latex_results = {}
             latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
@@ -91,7 +97,7 @@ class LatexExtractor:
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"error: {str(e)}"
-        return latex_result, final_confidence_score
+        return latex_result, final_confidence_score, is_handwritten
 
     def detect_and_remove_diagrams(self, request_id: str):
         try:
@@ -126,3 +132,22 @@ class LatexExtractor:
                 logging.info(f"Request id : {request_id} -> Diagrams not found.")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error: {e}")
+    
+    def detect_is_handwritten(self, request_id: str):
+        try:
+            img = Image.open(self.downloaded_file_path).convert('RGB')
+            tgc = TypegroupsClassifier.load(os.path.join('ocrd_typegroups_classifier', 'models', 'classifier.tgc'))
+
+            result = tgc.classify(img, 75, 64, False)
+            esum = 0
+            for key in result:
+                esum += exp(result[key])
+            for key in result:
+                result[key] = exp(result[key]) / esum
+            is_handwritten = result['handwritten'] > result['printed']
+            logging.info(f"Request id : {request_id} -> Handwritten or printed detected.")
+            return is_handwritten
+        except Exception as e:
+            # If model is failing in any case always return false
+            logging.error(f"Request id : {request_id} -> Handwritten or printed not detected.")
+            return False
