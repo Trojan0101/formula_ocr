@@ -1,0 +1,25 @@
+meta {
+  name: Conver Text Multipart Local
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://127.0.0.1:5000/convert_text_multipart
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  language: KOREAN
+  data_options: '''
+    {
+        "include_asciimath": true,
+        "include_latex": true,
+        "include_text": true
+      }
+  '''
+  file: @file(C:\Users\Trojan-PC\Downloads\image-5.png)
+  formats: data
+  formats: text
+}

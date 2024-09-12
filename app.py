@@ -246,6 +246,148 @@ def convert_text():
 
         return jsonify(response_dict)
 
+@app.route('/convert_text_multipart', methods=['POST'])
+def convert_text_multipart():
+    request_id = str(uuid.uuid4())
+
+    if 'file' not in request.files:
+        error = "No file part"
+        logging.error(f"Request id : {request_id} -> Error: {error}")
+        response_dict = {
+            "request_id": request_id,
+            "version": app.api_version,
+            "error": error
+        }
+        return jsonify(response_dict)
+
+    file = request.files['file']
+    if file.filename == '':
+        error = "No selected file"
+        logging.error(f"Request id : {request_id} -> Error: {error}")
+        response_dict = {
+            "request_id": request_id,
+            "version": app.api_version,
+            "error": error
+        }
+        return jsonify(response_dict)
+
+    # Save the file
+    file_path = os.path.join(app.downloaded_file_path, f"{request_id}.png")
+    file.save(file_path)
+
+    # Extract image size
+    with Image.open(file_path) as img:
+        app.image_width, app.image_height = img.size
+
+    # Extract parameters from form-data
+    request_data = {
+        "language": request.form.get("language"),
+        "formats": request.form.getlist("formats"),
+        "data_options": json.loads(request.form.get("data_options", '{}')),
+        "format_options": json.loads(request.form.get("format_options", '{}'))
+    }
+
+    # Assign values from the processed request_data
+    assign_values_from_request(request_data)
+
+    # Process image
+    try:
+        is_handwritten = False
+        text_result = ""
+        latex_styled_result = ""
+        ascii_result = ""
+        if app.language is not None:
+            latex_extractor = LatexExtractor(file_path)
+            latex_styled_result, latex_confidence = latex_extractor.recognize_image_single_language(
+                model=app.language_dictionary[app.language], request_id=request_id, language=app.language)
+        else:
+            latex_extractor = LatexExtractor(
+                downloaded_file_path=file_path,
+                latex_model_english=app.latex_model_english,
+                latex_model_korean=app.latex_model_korean,
+                latex_model_japanese=app.latex_model_japanese,
+                latex_model_chinese_sim=app.latex_model_chinese_sim,
+                latex_model_chinese_tra=app.latex_model_chinese_tra
+            )
+            latex_styled_result, latex_confidence = latex_extractor.recognize_image(request_id=request_id)
+
+        ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
+        data_ascii_result, text_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
+
+        if text_result.strip() == "":
+            text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
+            text_result = "".join(text_result)
+
+        data_latex_result = {
+            "type": "latex",
+            "value": latex_styled_result
+        }
+
+        data_text_result = {
+            "type": "text",
+            "value": text_result
+        }
+
+        final_data_result = []
+
+        if app.include_text:
+            final_data_result.append(data_text_result)
+        if app.include_asciimath:
+            final_data_result += data_ascii_result
+        if app.include_latex:
+            final_data_result.append(data_latex_result)
+
+        if "text" in app.formats and "data" in app.formats:
+            response_dict = {
+                "request_id": request_id,
+                "version": app.api_version,
+                "image_width": app.image_width,
+                "image_height": app.image_height,
+                "is_printed": not is_handwritten,
+                "is_handwritten": is_handwritten,
+                "text": text_result,
+                "latex_styled": latex_styled_result,
+                "confidence": latex_confidence,
+                "data": final_data_result
+            }
+            return jsonify(response_dict)
+        elif "text" in app.formats and "data" not in app.formats:
+            response_dict = {
+                "request_id": request_id,
+                "version": app.api_version,
+                "image_width": app.image_width,
+                "image_height": app.image_height,
+                "is_printed": not is_handwritten,
+                "is_handwritten": is_handwritten,
+                "text": text_result,
+                "latex_styled": latex_styled_result,
+                "confidence": latex_confidence
+            }
+            return jsonify(response_dict)
+        elif "data" in app.formats and "text" not in app.formats:
+            response_dict = {
+                "request_id": request_id,
+                "version": app.api_version,
+                "image_width": app.image_width,
+                "image_height": app.image_height,
+                "is_printed": not is_handwritten,
+                "is_handwritten": is_handwritten,
+                "data": final_data_result,
+                "confidence": latex_confidence
+            }
+            return jsonify(response_dict)
+    except Exception as e:
+        error = str(e)
+        logging.error(f"Request id : {request_id} -> Error: {error}")
+        response_dict = {
+            "request_id": request_id,
+            "version": app.api_version,
+            "image_width": app.image_width,
+            "image_height": app.image_height,
+            "error": error
+        }
+        return jsonify(response_dict)
+
 
 def assign_values_from_request(request_data: dict):
     # Image Source
