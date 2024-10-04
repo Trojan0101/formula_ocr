@@ -233,7 +233,7 @@ def convert_text():
             return jsonify(response_dict)
     except Exception as e:
         error = str(e)
-        logging.error(f"Request id : {request_id} -> Error: {error}")
+        logging.error(f"E_OCR_006 -> Request id : {request_id} -> Error: {error}")
         response_dict = {
             "request_id": request_id,
             "version": app.api_version,
@@ -251,7 +251,7 @@ def convert_text_multipart():
 
     if 'file' not in request.files:
         error = "No file part"
-        logging.error(f"Request id : {request_id} -> Error: {error}")
+        logging.error(f"E_OCR_007 -> Request id : {request_id} -> Error: {error}")
         response_dict = {
             "request_id": request_id,
             "version": app.api_version,
@@ -262,7 +262,7 @@ def convert_text_multipart():
     file = request.files['file']
     if file.filename == '':
         error = "No selected file"
-        logging.error(f"Request id : {request_id} -> Error: {error}")
+        logging.error(f"E_OCR_008 -> Request id : {request_id} -> Error: {error}")
         response_dict = {
             "request_id": request_id,
             "version": app.api_version,
@@ -376,7 +376,7 @@ def convert_text_multipart():
             return jsonify(response_dict)
     except Exception as e:
         error = str(e)
-        logging.error(f"Request id : {request_id} -> Error: {error}")
+        logging.error(f"E_OCR_009 -> Request id : {request_id} -> Error: {error}")
         response_dict = {
             "request_id": request_id,
             "version": app.api_version,
@@ -453,7 +453,7 @@ def check_url_and_download_image(image_url: str, request_id: str) -> Union[Respo
             return new_downloaded_file_path
         except Exception as e:
             error = str(e)
-            logging.error(f"Request id : {request_id} -> Error with exception: {error}")
+            logging.error(f"E_OCR_010 -> Request id : {request_id} -> Error with exception: {error}")
             response_dict = {
                 "request_id": request_id,
                 "version": app.api_version,
@@ -464,7 +464,7 @@ def check_url_and_download_image(image_url: str, request_id: str) -> Union[Respo
             return jsonify(response_dict)
     else:
         error = str({"error": "Invalid URL format"})
-        logging.error(f"Request id : {request_id} -> Error: {error}")
+        logging.error(f"E_OCR_011 -> Request id : {request_id} -> Error: {error}")
         response_dict = {
             "request_id": request_id,
             "version": app.api_version,

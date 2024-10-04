@@ -47,7 +47,7 @@ class AsciimathConverter:
             ascii_result.append(per_result_dict)
             return ascii_result, normal_equation
         except Exception as e:
-            logging.error(f"Request id : {request_id} -> Error: Text is also present in math formula. Can't convert "
+            logging.error(f"E_OCR_005 -> Request id : {request_id} -> Error: Text is also present in math formula. Can't convert "
                           f"to asciimath.")
             if ascii_result:
                 return ascii_result, normal_equation

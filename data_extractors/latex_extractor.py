@@ -67,7 +67,7 @@ class LatexExtractor:
             logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {highest_confidence_text}")
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
-            return f"error: {str(e)}"
+            return f"E_OCR_001 -> error: {str(e)}"
         return highest_confidence_text, highest_confidence, is_handwritten
 
     def recognize_image_single_language(self, model: Any, request_id: str, language: str):
@@ -79,7 +79,7 @@ class LatexExtractor:
             latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
             latex_result = ""
             for data in latex_data:
-                latex_result += data.get("text", "")
+                latex_result += data.get("text", "") + " "
             total_score = 0
             total_dicts = len(latex_data)
             for data in latex_data:
@@ -96,7 +96,7 @@ class LatexExtractor:
 
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
-            return f"error: {str(e)}"
+            return f"E_OCR_002 -> error: {str(e)}"
         return latex_result, final_confidence_score, is_handwritten
 
     def detect_and_remove_diagrams(self, request_id: str):
@@ -131,7 +131,7 @@ class LatexExtractor:
             else:
                 logging.info(f"Request id : {request_id} -> Diagrams not found.")
         except Exception as e:
-            logging.error(f"Request id : {request_id} -> Error: {e}")
+            logging.error(f"E_OCR_003 -> Request id : {request_id} -> Error: {e}")
     
     def detect_is_handwritten(self, request_id: str):
         try:
@@ -149,5 +149,5 @@ class LatexExtractor:
             return is_handwritten
         except Exception as e:
             # If model is failing in any case always return false
-            logging.error(f"Request id : {request_id} -> Handwritten or printed not detected.")
+            logging.error(f"E_OCR_004 -> Request id : {request_id} -> Handwritten or printed not detected.")
             return False
