@@ -34,6 +34,7 @@ class LatexExtractor:
             "self.latex_model_chinese_tra": [['en', 'ch_tra'], self.latex_model_chinese_tra],
         }
         self.downloaded_file_path = downloaded_file_path
+        self.is_diagram = False
 
     def recognize_image(self, request_id: str):
         """Recognize text in the given image and optionally save the result."""
@@ -68,7 +69,7 @@ class LatexExtractor:
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"E_OCR_001 -> error: {str(e)}"
-        return highest_confidence_text, highest_confidence, is_handwritten
+        return highest_confidence_text, highest_confidence, is_handwritten, self.is_diagram
 
     def recognize_image_single_language(self, model: Any, request_id: str, language: str):
         try:
@@ -97,7 +98,7 @@ class LatexExtractor:
         except Exception as e:
             logging.error(f"Request id : {request_id} -> Error with exception: {e}")
             return f"E_OCR_002 -> error: {str(e)}"
-        return latex_result, final_confidence_score, is_handwritten
+        return latex_result, final_confidence_score, is_handwritten, self.is_diagram
 
     def detect_and_remove_diagrams(self, request_id: str):
         try:
@@ -127,6 +128,7 @@ class LatexExtractor:
             
             if to_write:
                 cv2.imwrite(self.downloaded_file_path, image)
+                self.is_diagram = True
                 logging.info(f"Request id : {request_id} -> Diagrams found and removed from image.")
             else:
                 logging.info(f"Request id : {request_id} -> Diagrams not found.")
