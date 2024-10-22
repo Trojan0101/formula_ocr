@@ -50,27 +50,45 @@ class LatexExtractor:
                 model = self.model_dictionary[latex_model][1]
                 count += 1
                 latex_data = model.recognize_text_formula(image, file_type='text_formula', return_text=False)
+                
                 latex_result = ""
+                confidence_per_line = {}
+                line_numbers = [entry['line_number'] for entry in latex_data]
+                line_number_counts = Counter(line_numbers)
+
                 for data in latex_data:
                     latex_result += data.get("text", "")
+                    # Calculate confidence per line number
+                    line_number = data.get('line_number')
+                    if line_number is not None and 'text' in data and 'score' in data:
+                        if line_number not in confidence_per_line:
+                            confidence_per_line[line_number] = round(data["score"], 7)
+                        else:
+                            confidence_per_line[line_number] = confidence_per_line[line_number] + round(data["score"], 7)
+
+                for key, value in enumerate(confidence_per_line):
+                    total_same_line_count = line_number_counts[key]
+                    confidence_per_line[key] = round((confidence_per_line[key] / total_same_line_count) * 100, 7)
+
                 total_score = 0
                 total_dicts = len(latex_data)
                 for data in latex_data:
                     total_score += data["score"]
                 final_confidence_score = total_score / total_dicts
                 latex_results[f"model_{count}"] = {"text": latex_result, "confidence": final_confidence_score,
-                                                   "language": language}
+                                                   "language": language, "confidence_per_line": confidence_per_line}
 
             highest_confidence_model = max(latex_results, key=lambda k: latex_results[k]['confidence'])
             highest_confidence = latex_results[highest_confidence_model]['confidence']
             highest_confidence_text = latex_results[highest_confidence_model]['text']
+            highest_confidence_per_line_dict = latex_results[highest_confidence_model]['confidence_per_line']
             # highest_confidence_language = latex_results[highest_confidence_model]['language']
 
             logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {highest_confidence_text}")
         except Exception as e:
-            logging.error(f"Request id : {request_id} -> Error with exception: {e}")
+            logging.error(f"E_OCR_002 -> -> Request id : {request_id} -> Error: Corrupt Image.")
             raise CustomException(f"E_OCR_002 -> -> Request id : {request_id} -> Error: Corrupt Image.")
-        return highest_confidence_text, highest_confidence, is_handwritten, self.is_diagram
+        return highest_confidence_text, round(highest_confidence, 7), is_handwritten, self.is_diagram, highest_confidence_per_line_dict
 
     def recognize_image_single_language(self, model: Any, request_id: str, language: str):
         try:
@@ -91,15 +109,18 @@ class LatexExtractor:
                 line_number = data.get('line_number')
                 if line_number is not None and 'text' in data and 'score' in data:
                     if line_number not in confidence_per_line:
-                        confidence_per_line[line_number] = []
-                    # confidence_per_line[line_number].append({'text': data['text'], 'score': data['score']})
-                    confidence_per_line[line_number]["text"] += confidence_per_line[line_number]["text"]
-                    confidence_per_line[line_number]["score"] += confidence_per_line[line_number]["score"]
+                        confidence_per_line[line_number] = round(data["score"], 7)
+                    else:
+                        confidence_per_line[line_number] = confidence_per_line[line_number] + round(data["score"], 7)
+
+            for key, value in enumerate(confidence_per_line):
+                total_same_line_count = line_number_counts[key]
+                confidence_per_line[key] = round((confidence_per_line[key] / total_same_line_count) * 100, 7)
 
             total_score = 0
             total_dicts = len(latex_data)
             for data in latex_data:
-                total_score += data["score"]
+                total_score += round(data["score"], 5)
             if total_dicts != 0:
                 final_confidence_score = (total_score / total_dicts) * 100
             if total_dicts == 0:
@@ -111,9 +132,9 @@ class LatexExtractor:
             logging.info(f"Request id : {request_id} -> Extracted Text LatexOCRMixed: {latex_result}")
 
         except Exception as e:
-            logging.error(f"Request id : {request_id} -> Error with exception: {e}")
+            logging.error(f"E_OCR_002 -> -> Request id : {request_id} -> Error: Corrupt Image.")
             raise CustomException(f"E_OCR_002 -> -> Request id : {request_id} -> Error: Corrupt Image.")
-        return latex_result, final_confidence_score, is_handwritten, self.is_diagram
+        return latex_result, round(final_confidence_score, 7), is_handwritten, self.is_diagram, confidence_per_line
 
     def detect_and_remove_diagrams(self, request_id: str):
         try:

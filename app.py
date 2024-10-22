@@ -149,7 +149,7 @@ def convert_text():
 
         if app.language is not None:
             latex_extractor = LatexExtractor(downloaded_file_path)
-            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available = latex_extractor.recognize_image_single_language(
+            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available, confidence_per_line = latex_extractor.recognize_image_single_language(
                 model=app.language_dictionary[app.language], request_id=request_id, language=app.language)
         else:
             latex_extractor = LatexExtractor(
@@ -160,7 +160,7 @@ def convert_text():
                 latex_model_chinese_sim=app.latex_model_chinese_sim,
                 latex_model_chinese_tra=app.latex_model_chinese_tra
             )
-            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available = latex_extractor.recognize_image(request_id=request_id)
+            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available, confidence_per_line = latex_extractor.recognize_image(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result, text_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
@@ -201,6 +201,7 @@ def convert_text():
                 "text": text_result,
                 "latex_styled": latex_styled_result,
                 "confidence": latex_confidence,
+                "confidence_per_line": confidence_per_line,
                 "data": final_data_result,
                 "url": app.image_url
             }
@@ -217,6 +218,7 @@ def convert_text():
                 "text": text_result,
                 "latex_styled": latex_styled_result,
                 "confidence": latex_confidence,
+                "confidence_per_line": confidence_per_line,
                 "url": app.image_url
             }
             return jsonify(response_dict)
@@ -231,6 +233,7 @@ def convert_text():
                 "is_diagram_available": is_diagram_available,
                 "data": final_data_result,
                 "confidence": latex_confidence,
+                "confidence_per_line": confidence_per_line,
                 "url": app.image_url
             }
             return jsonify(response_dict)
@@ -299,7 +302,7 @@ def convert_text_multipart():
         ascii_result = ""
         if app.language is not None:
             latex_extractor = LatexExtractor(file_path)
-            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available = latex_extractor.recognize_image_single_language(
+            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available, confidence_per_line = latex_extractor.recognize_image_single_language(
                 model=app.language_dictionary[app.language], request_id=request_id, language=app.language)
         else:
             latex_extractor = LatexExtractor(
@@ -310,7 +313,7 @@ def convert_text_multipart():
                 latex_model_chinese_sim=app.latex_model_chinese_sim,
                 latex_model_chinese_tra=app.latex_model_chinese_tra
             )
-            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available = latex_extractor.recognize_image(request_id=request_id)
+            latex_styled_result, latex_confidence, is_handwritten, is_diagram_available, confidence_per_line = latex_extractor.recognize_image(request_id=request_id)
 
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result, text_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
@@ -350,6 +353,7 @@ def convert_text_multipart():
                 "text": text_result,
                 "latex_styled": latex_styled_result,
                 "confidence": latex_confidence,
+                "confidence_per_line": confidence_per_line,
                 "data": final_data_result
             }
             return jsonify(response_dict)
@@ -364,7 +368,8 @@ def convert_text_multipart():
                 "is_diagram_available": is_diagram_available,
                 "text": text_result,
                 "latex_styled": latex_styled_result,
-                "confidence": latex_confidence
+                "confidence": latex_confidence,
+                "confidence_per_line": confidence_per_line,
             }
             return jsonify(response_dict)
         elif "data" in app.formats and "text" not in app.formats:
@@ -377,7 +382,8 @@ def convert_text_multipart():
                 "is_handwritten": is_handwritten,
                 "is_diagram_available": is_diagram_available,
                 "data": final_data_result,
-                "confidence": latex_confidence
+                "confidence": latex_confidence,
+                "confidence_per_line": confidence_per_line,
             }
             return jsonify(response_dict)
     except Exception as e:
