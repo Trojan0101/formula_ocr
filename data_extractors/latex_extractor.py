@@ -68,7 +68,10 @@ class LatexExtractor:
 
                 for key, value in enumerate(confidence_per_line):
                     total_same_line_count = line_number_counts[key]
-                    confidence_per_line[key] = round((confidence_per_line[key] / total_same_line_count) * 100, 7)
+                    if total_same_line_count != 0:
+                        confidence_per_line[key] = round((confidence_per_line[key] / total_same_line_count) * 100, 7)
+                    if total_same_line_count == 0:
+                        confidence_per_line[key] = round(confidence_per_line[key] * 100, 7)
 
                 total_score = 0
                 total_dicts = len(latex_data)
@@ -115,7 +118,10 @@ class LatexExtractor:
 
             for key, value in enumerate(confidence_per_line):
                 total_same_line_count = line_number_counts[key]
-                confidence_per_line[key] = round((confidence_per_line[key] / total_same_line_count) * 100, 7)
+                if total_same_line_count != 0:
+                    confidence_per_line[key] = round((confidence_per_line[key] / total_same_line_count) * 100, 7)
+                if total_same_line_count == 0:
+                    confidence_per_line[key] = round(confidence_per_line[key] * 100, 7)
 
             total_score = 0
             total_dicts = len(latex_data)
