@@ -73,11 +73,7 @@ class LatexExtractor:
                     if total_same_line_count == 0:
                         confidence_per_line[key] = round(confidence_per_line[key] * 100, 7)
 
-                total_score = 0
-                total_dicts = len(latex_data)
-                for data in latex_data:
-                    total_score += data["score"]
-                final_confidence_score = total_score / total_dicts
+                final_confidence_score = sum(confidence_per_line.values()) / len(confidence_per_line)
                 latex_results[f"model_{count}"] = {"text": latex_result, "confidence": final_confidence_score,
                                                    "language": language, "confidence_per_line": confidence_per_line}
 
@@ -123,14 +119,7 @@ class LatexExtractor:
                 if total_same_line_count == 0:
                     confidence_per_line[key] = round(confidence_per_line[key] * 100, 7)
 
-            total_score = 0
-            total_dicts = len(latex_data)
-            for data in latex_data:
-                total_score += round(data["score"], 5)
-            if total_dicts != 0:
-                final_confidence_score = (total_score / total_dicts) * 100
-            if total_dicts == 0:
-                final_confidence_score = total_score * 100
+            final_confidence_score = sum(confidence_per_line.values()) / len(confidence_per_line)
 
             latex_results[f"model_{language}"] = {"text": latex_result, "confidence": final_confidence_score,
                                                    "language": language}
