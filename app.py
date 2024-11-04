@@ -6,6 +6,7 @@ Date: 25-06-2024
 import json
 import logging
 import os
+import re
 from typing import List, Optional, Union
 from urllib.parse import urlparse
 
@@ -169,6 +170,7 @@ def convert_text():
             text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
             text_result = "".join(text_result)
 
+        latex_styled_result = re.sub(r'\\{2,}', r'\\', latex_styled_result)
         data_latex_result = {
             "type": "latex",
             "value": latex_styled_result
@@ -322,6 +324,7 @@ def convert_text_multipart():
             text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
             text_result = "".join(text_result)
 
+        latex_styled_result = re.sub(r'\\{2,}', r'\\', latex_styled_result)
         data_latex_result = {
             "type": "latex",
             "value": latex_styled_result
