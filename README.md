@@ -48,23 +48,3 @@
     ```bash
     disown
     ```
-
-**Using docker:**
-
-1) Create the Docker Image:
-    ```bash
-    cd formula_ocr
-    ```
-    ```bash
-    docker build -t formula_ocr:latest .
-    ```
-
-2) Verify the image:
-    ```bash
-    docker images
-    ```
-
-3) Run a Container from the Image:
-    ```bash
-    docker run -p 8080:8080 formula_ocr:latest
-    ```
