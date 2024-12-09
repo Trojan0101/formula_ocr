@@ -112,3 +112,5 @@ Werkzeug==3.0.3
 xxhash==3.4.1
 yarl==1.9.4
 zipp==3.19.2
+pytesseract==0.3.13
+super-image==0.1.7
