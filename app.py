@@ -16,6 +16,7 @@ from pix2text import Pix2Text
 from PIL import Image
 from py_asciimath.translator.translator import Tex2ASCIIMath
 
+from data_extractors.advanced_text_extractor import AdvancedTextExtractor
 from data_extractors.asciimath_converter import AsciimathConverter
 from data_extractors.latex_extractor import LatexExtractor
 
@@ -59,6 +60,9 @@ class MyFlaskApp(Flask):
 
         # Langugae
         self.language: str = ""
+
+        # Advanced Text Extraction
+        self.advanced_text_extraction = False
 
         # Language comparison
         self.language_dictionary = {
@@ -166,6 +170,10 @@ def convert_text():
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result, text_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
 
+        advanced_extracted_text = "Provide 'advanced_text_extraction' as True is the request!!!"
+        if app.advanced_text_extraction and app.language is not None:
+            advanced_extracted_text = AdvancedTextExtractor(downloaded_file_path, language=app.language)
+
         if text_result.strip() == "":
             text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
             text_result = "".join(text_result)
@@ -181,6 +189,11 @@ def convert_text():
             "value": text_result
         }
 
+        advanced_text_result = {
+            "type": "text",
+            "value": advanced_extracted_text
+        }
+
         final_data_result = []
 
         if app.include_text:
@@ -190,6 +203,9 @@ def convert_text():
             final_data_result += data_ascii_result
         if app.include_latex:
             final_data_result.append(data_latex_result)
+        
+        if app.advanced_text_extraction:
+            final_data_result.append(advanced_text_result)
 
         if "text" in app.formats and "data" in app.formats:
             response_dict = {
@@ -201,6 +217,7 @@ def convert_text():
                 "is_handwritten": is_handwritten,
                 "is_diagram_available": is_diagram_available,
                 "text": text_result,
+                "advanced_text": advanced_text_result,
                 "latex_styled": latex_styled_result,
                 "confidence": latex_confidence,
                 "confidence_per_line": confidence_per_line,
@@ -218,6 +235,7 @@ def convert_text():
                 "is_handwritten": is_handwritten,
                 "is_diagram_available": is_diagram_available,
                 "text": text_result,
+                "advanced_text": advanced_text_result,
                 "latex_styled": latex_styled_result,
                 "confidence": latex_confidence,
                 "confidence_per_line": confidence_per_line,
@@ -320,6 +338,10 @@ def convert_text_multipart():
         ascii_converter = AsciimathConverter(converter_model=app.tex2asciimath)
         data_ascii_result, text_result = ascii_converter.convert_to_ascii(request_id=request_id, latex_expression=latex_styled_result)
 
+        advanced_extracted_text = "Provide 'advanced_text_extraction' as True is the request!!!"
+        if app.advanced_text_extraction and app.language is not None:
+            advanced_extracted_text = AdvancedTextExtractor(file_path, language=app.language)
+        
         if text_result.strip() == "":
             text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
             text_result = "".join(text_result)
@@ -335,6 +357,11 @@ def convert_text_multipart():
             "value": text_result
         }
 
+        advanced_text_result = {
+            "type": "text",
+            "value": advanced_extracted_text
+        }
+
         final_data_result = []
 
         if app.include_text:
@@ -343,6 +370,9 @@ def convert_text_multipart():
             final_data_result += data_ascii_result
         if app.include_latex:
             final_data_result.append(data_latex_result)
+        
+        if app.advanced_text_extraction:
+            final_data_result.append(advanced_text_result)
 
         if "text" in app.formats and "data" in app.formats:
             response_dict = {
@@ -354,6 +384,7 @@ def convert_text_multipart():
                 "is_handwritten": is_handwritten,
                 "is_diagram_available": is_diagram_available,
                 "text": text_result,
+                "advanced_text": advanced_text_result,
                 "latex_styled": latex_styled_result,
                 "confidence": latex_confidence,
                 "confidence_per_line": confidence_per_line,
@@ -370,6 +401,7 @@ def convert_text_multipart():
                 "is_handwritten": is_handwritten,
                 "is_diagram_available": is_diagram_available,
                 "text": text_result,
+                "advanced_text": advanced_text_result,
                 "latex_styled": latex_styled_result,
                 "confidence": latex_confidence,
                 "confidence_per_line": confidence_per_line,
@@ -408,6 +440,9 @@ def assign_values_from_request(request_data: dict):
 
     # Language
     app.language = request_data.get("language", None)
+
+    # Advanced Text Extraction
+    app.advanced_text_extraction = request_data.get("advanced_text_extraction", False)
 
     # Formats (text and data)
     app.formats = request_data.get("formats", [])

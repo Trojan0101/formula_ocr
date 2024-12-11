@@ -9,7 +9,7 @@ from PIL import Image
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-class LatexExtractor:
+class AdvancedTextExtractor:
     def __init__(self, downloaded_file_path: str, language: str = ""):
         """Place trained data in folder: /usr/share/tesseract-ocr/4.00/tessdata/"""
         self.downloaded_file_path = downloaded_file_path
