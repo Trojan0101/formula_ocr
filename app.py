@@ -19,6 +19,7 @@ from py_asciimath.translator.translator import Tex2ASCIIMath
 from data_extractors.advanced_text_extractor import AdvancedTextExtractor
 from data_extractors.asciimath_converter import AsciimathConverter
 from data_extractors.latex_extractor import LatexExtractor
+from super_image import EdsrModel, ImageLoader
 
 import uuid
 
@@ -172,7 +173,9 @@ def convert_text():
 
         advanced_extracted_text = "Provide 'advanced_text_extraction' as True is the request!!!"
         if app.advanced_text_extraction and app.language is not None:
-            advanced_extracted_text = AdvancedTextExtractor(downloaded_file_path, language=app.language)
+            model = EdsrModel.from_pretrained('eugenesiow/edsr-base', scale=4)
+            advanced_text_extractor = AdvancedTextExtractor(downloaded_file_path, language=app.language)
+            advanced_extracted_text = advanced_text_extractor.extract_text(model, request_id)
 
         if text_result.strip() == "":
             text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]
@@ -340,7 +343,9 @@ def convert_text_multipart():
 
         advanced_extracted_text = "Provide 'advanced_text_extraction' as True is the request!!!"
         if app.advanced_text_extraction and app.language is not None:
-            advanced_extracted_text = AdvancedTextExtractor(file_path, language=app.language)
+            model = EdsrModel.from_pretrained('eugenesiow/edsr-base', scale=4)
+            advanced_text_extractor = AdvancedTextExtractor(file_path, language=app.language)
+            advanced_extracted_text = advanced_text_extractor.extract_text(model, request_id)
         
         if text_result.strip() == "":
             text_result = [[item["value"] for item in data_ascii_result if item["type"] == "asciimath"] if text_result.strip() == "" else text_result][0]

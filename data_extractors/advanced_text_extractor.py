@@ -3,7 +3,6 @@ import pytesseract
 import cv2
 import numpy as np
 import logging
-from latex_extractor import CustomException
 from super_image import EdsrModel, ImageLoader
 from PIL import Image
 
@@ -38,8 +37,8 @@ class AdvancedTextExtractor:
         upscaled_image = self.upscale_image(image, upscale_model, request_id)
         
         try:
-            tesseract_preprocessed_image = self.preprocess_image_for_tesseract(upscaled_image, request_id)
-            extracted_text = pytesseract.image_to_string(tesseract_preprocessed_image, lang=self.tesseract_language)
+            # tesseract_preprocessed_image = self.preprocess_image_for_tesseract(image, request_id)
+            extracted_text = pytesseract.image_to_string(upscaled_image, lang=self.tesseract_language)
             logging.info(f"Request id : {request_id} -> Text extracted succesfully with advanced text extraction.")
             return extracted_text
         except Exception as e:
@@ -67,16 +66,38 @@ class AdvancedTextExtractor:
             raise CustomException(f"E_OCR_013 -> -> Request id : {request_id} -> Error: Cannot preprocess image for advanced text extraction.")
         
     def upscale_image(self, image_data, upscale_model, request_id: str):
-        """
-        model = EdsrModel.from_pretrained('eugenesiow/edsr-base', scale=4) in app.py
-        """
         try:
             input_image_data = ImageLoader.load_image(image_data)
             upscaled_image_data = upscale_model(input_image_data)
-            # Check if we need to save and reuse the image or if this data itself is enough
-            logging.info(f"Request id : {request_id} -> Image upscaled succesfully for advanced text extraction.")
-            return upscaled_image_data
+            
+            # Detach, move to CPU, and convert to NumPy array
+            upscaled_image_data = upscaled_image_data.detach().cpu().numpy()
+            
+            # Handle tensor dimensions
+            if upscaled_image_data.ndim == 3 and upscaled_image_data.shape[0] == 1:  # Assuming shape (1, 1, width)
+                upscaled_image_data = upscaled_image_data.squeeze()  # Convert to (height, width)
+            elif upscaled_image_data.ndim == 4:  # Assuming shape (1, channels, height, width)
+                upscaled_image_data = upscaled_image_data.squeeze(0)  # Remove batch dimension
+                upscaled_image_data = np.moveaxis(upscaled_image_data, 0, -1)  # Convert to (height, width, channels)
+            
+            # Scale to 0–255 and convert to uint8
+            upscaled_image_data = np.clip(upscaled_image_data * 255, 0, 255).astype(np.uint8)
+            
+            # Convert to PIL Image
+            upscaled_image = Image.fromarray(upscaled_image_data)
+            logging.info(f"Request id : {request_id} -> Image upscaled successfully for advanced text extraction.")
+            return upscaled_image
         except Exception as e:
             logging.error(f"E_OCR_015 -> -> Request id : {request_id} -> Error: Cannot upscale image.")
-            raise CustomException(f"E_OCR_015 -> -> Request id : {request_id} -> Error: Cannot Cannot upscale image.")
+            raise CustomException(f"E_OCR_015 -> -> Request id : {request_id} -> Error: Cannot upscale image.")
+
+
+
+class CustomException(Exception):
+    def __init__(self, message: str = ""):
+        super().__init__(message)
+        self.message: str = message
+
+    def __str__(self):
+        return self.message
             
