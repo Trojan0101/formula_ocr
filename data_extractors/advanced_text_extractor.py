@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 class AdvancedTextExtractor:
     def __init__(self, downloaded_file_path: str, language: str = ""):
         """Place trained data in folder: /usr/share/tesseract-ocr/4.00/tessdata/"""
+        pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
         self.downloaded_file_path = downloaded_file_path
         self.tesseract_language = "eng"
         if language == "CHINESE_TRA":
