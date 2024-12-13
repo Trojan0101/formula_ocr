@@ -5,15 +5,16 @@ meta {
 }
 
 post {
-  url: http:\\54.:8080\convert_text
+  url: http:\\54.180.95.36:8080\convert_text
   body: json
   auth: none
 }
 
 body:json {
   {
-    "src": "https://jollydays.platinum24.net/mathpix/kr/kr2ccc.png",
+    "src": "https://github.com/Trojan0101/formula_ocr/blob/main/error_images_analysis/DMAA-046-2.png?raw=true",
     "language": "KOREAN",
+    "advanced_text_extraction": true,
     "formats": ["text", "data"],
     "data_options": {
       "include_asciimath": true,
