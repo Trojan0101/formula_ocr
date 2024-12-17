@@ -106,7 +106,7 @@ class MyFlaskApp(Flask):
         config = {
             'text_formula': {'languages': ('en', language_code)},
         }
-        return Pix2Text.from_config(total_configs=config)
+        return Pix2Text.from_config(total_configs=config, device="cuda")
 
 
 
