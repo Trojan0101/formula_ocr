@@ -1,55 +1,78 @@
 """
-Title: AsciimathConverter
+Title: Asciimath converter
 Author: Trojan
 Date: 27-06-2024
 """
 
 import logging
-from typing import Any
-
-from py_asciimath.translator.translator import (
-    ASCIIMath2MathML,
-    ASCIIMath2Tex,
-    MathML2Tex,
-    Tex2ASCIIMath
-)
+from typing import Any, List, Tuple
 from pylatexenc.latex2text import LatexNodes2Text
 
+from utilities.config import LOGGING_LEVEL
+from utilities.general_utils import setup_logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+# Logging configuration
+setup_logging(LOGGING_LEVEL)
 
 
 class AsciimathConverter:
+    """
+    A class to convert LaTeX expressions to AsciiMath using a specified converter model.
+    """
+
     def __init__(self, converter_model: Any):
+        """
+        Initialize the converter with the given model.
+
+        :param converter_model: The model responsible for translating LaTeX to AsciiMath.
+        """
         self.converter_model = converter_model
 
-    def convert_to_ascii(self, request_id: str, latex_expression: str):
+    def convert_to_ascii(self, request_id: str, latex_expression: str) -> Tuple[List[dict], str]:
+        """
+        Convert a LaTeX expression into AsciiMath format.
+
+        :param request_id: Unique identifier for the conversion request.
+        :param latex_expression: Input LaTeX expression as a string.
+        :return: A tuple containing:
+                 - List of dictionaries with "type" and "value" keys.
+                 - Normalized text representation of the LaTeX expression.
+        """
         ascii_result = []
         try:
+            # Normalize LaTeX expression: convert to text
             normal_equation = LatexNodes2Text().latex_to_text(latex_expression)
-            equations = [eq.replace('?', '').strip().replace('∴', '') for eq in normal_equation.split('\n') if eq.strip()]
-            for i, equation in enumerate(equations, start=1):
-                per_ascii_result = ""
+            equations = [
+                eq.replace('?', '').strip().replace('∴', '')
+                for eq in normal_equation.split('\n') if eq.strip()
+            ]
+
+            # Attempt to convert each line (optional if input has multiple lines)
+            for equation in equations:
                 try:
-                    per_ascii_result = self.converter_model.translate(equation.strip(), from_file=False, pprint=False)
+                    per_ascii_result = self.converter_model.translate(
+                        equation.strip(), from_file=False, pprint=False
+                    )
                 except Exception as e:
-                    break
-                per_result_dict = {"type": "asciimath", "value": per_ascii_result}
-                ascii_result.append(per_result_dict)
-            # Check if all values in ascii_result are "Unrecognized Character"
-            ascii_result = []
-            try:
-                per_ascii_result = self.converter_model.translate(latex_expression.strip(), from_file=False, pprint=False)
-            except Exception as e:
-                per_ascii_result = "Unrecognized Character"
-                return [{"type": "asciimath", "value": per_ascii_result}], normal_equation
-            per_result_dict = {"type": "asciimath", "value": per_ascii_result}
-            ascii_result.append(per_result_dict)
+                    logging.warning(f"Failed to convert equation: {equation}. Error: {e}")
+                    per_ascii_result = "Unrecognized Character"
+
+                ascii_result.append({"type": "asciimath", "value": per_ascii_result})
+
+            # If conversion produced no valid results, try converting the full LaTeX expression
+            if not ascii_result or all(res["value"] == "Unrecognized Character" for res in ascii_result):
+                try:
+                    full_ascii_result = self.converter_model.translate(
+                        latex_expression.strip(), from_file=False, pprint=False
+                    )
+                except Exception as e:
+                    logging.error(f"Failed to convert full expression. Error: {e}")
+                    full_ascii_result = "Unrecognized Character"
+
+                return [{"type": "asciimath", "value": full_ascii_result}], normal_equation
+
             return ascii_result, normal_equation
+
         except Exception as e:
-            logging.error(f"E_OCR_005 -> Request id : {request_id} -> Error: Text is also present in math formula. Can't convert "
-                          f"to asciimath.")
-            if ascii_result:
-                return ascii_result, normal_equation
-            else:
-                return [{"type": "asciimath", "value": "Formula with Text. Conversion not available."}], normal_equation
+            logging.error(f"E_OCR_005 -> Request ID: {request_id} -> Error: {e}")
+            return [{"type": "asciimath", "value": "Formula with Text. Conversion not available."}], ""

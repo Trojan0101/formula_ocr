@@ -1,3 +1,8 @@
+"""
+Title: General utils
+Author: Trojan
+Date: 25-06-2024
+"""
 from typing import Union
 from urllib.parse import urlparse
 import requests

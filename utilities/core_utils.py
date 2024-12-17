@@ -1,3 +1,8 @@
+"""
+Title: Core utils
+Author: Trojan
+Date: 25-06-2024
+"""
 import os
 import uuid
 import json
