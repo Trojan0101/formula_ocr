@@ -135,5 +135,5 @@ def parse_form_data(request):
         "formats": request.form.getlist("formats"),
         "data_options": json.loads(request.form.get("data_options", '{}')),
         "format_options": json.loads(request.form.get("format_options", '{}')),
-        "advanced_text_extraction": json.loads(request.form.get("advanced_text_extraction", '{}'))
+        "advanced_text_extraction": json.loads(request.form.get("advanced_text_extraction", False))
     }
