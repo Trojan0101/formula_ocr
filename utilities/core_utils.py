@@ -85,7 +85,7 @@ def construct_response(app, request_id, text_result, advanced_text_result, latex
     }
 
     if app.advanced_text_extraction:
-        response_dict["advanced_text"] = advanced_text_result
+        response_dict["advanced_text"] = {"type": "text", "value": advanced_text_result}
 
     if "text" in app.formats and "data" in app.formats:
         response_dict["data"] = final_data_result
