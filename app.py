@@ -11,6 +11,7 @@ from typing import List, Optional
 from flask import Flask, request, jsonify
 from pix2text import Pix2Text
 from py_asciimath.translator.translator import Tex2ASCIIMath
+from flask_cors import CORS
 
 from utilities.config import LOGGING_LEVEL, API_VERSION, DOWNLOADED_IMAGE_PATH
 from utilities.core_utils import generate_request_id, parse_request_data, convert_to_ascii, advanced_text_extraction, \
@@ -106,12 +107,16 @@ class MyFlaskApp(Flask):
         config = {
             'text_formula': {'languages': ('en', language_code)},
         }
-        return Pix2Text.from_config(total_configs=config, device="cuda")
+        # return Pix2Text.from_config(total_configs=config, device="cuda")  # In-case of gpu support
+        return Pix2Text.from_config(total_configs=config)
 
 
 
 # Create an instance of your Flask app
 app = MyFlaskApp(__name__)
+
+# Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 @app.route('/convert_text', methods=['POST'])
