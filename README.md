@@ -1,5 +1,4 @@
 # Formula OCR
-## Stakeholder: Raja Chelladurai, Axis API [Freelance_External]
 
 **Steps to follow:**
 
@@ -37,3 +36,5 @@
     ```bash
     disown
     ```
+
+## Stakeholder: Raja Chelladurai, Axis API [Freelance_External]
