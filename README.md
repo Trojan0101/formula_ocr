@@ -1,6 +1,8 @@
 # Formula OCR
 
-**Steps to follow:**
+`Stakeholder: Raja Chelladurai, Axis API [Freelance_External]`
+
+##Steps to follow:
 
 1) Clone the repo into formula_ocr_main directory:
     ```bash
@@ -36,5 +38,3 @@
     ```bash
     disown
     ```
-
-## Stakeholder: Raja Chelladurai, Axis API [Freelance_External]
