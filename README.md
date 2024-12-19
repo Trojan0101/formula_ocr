@@ -2,6 +2,12 @@
 
 `Stakeholder: Raja Chelladurai, Axis API [Freelance_External]`
 
+- Detect and extract text in multiple languages `[English, Chinese traditional, Chinese simplified, Korean, Japanese]`.
+- Detect and extract mathematical, and chemical formulas.
+- Detect if diagram is present in the image.
+- Detect if text is handwritten or printed.
+- Convert data to latex format.
+
 ## Steps to follow:
 
 1) Clone the repo into formula_ocr_main directory:
