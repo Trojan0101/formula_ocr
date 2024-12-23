@@ -204,4 +204,4 @@ class LatexExtractor:
         Log an error and raise a CustomException.
         """
         logging.error(f"{error_code} -> Request id: {request_id} -> {message}: {exception}")
-        raise CustomException(f"{error_code} -> Request id: {request_id} -> {message}")
+        raise CustomException(f"{error_code} -> Request id: {request_id} -> {message}: {exception}")

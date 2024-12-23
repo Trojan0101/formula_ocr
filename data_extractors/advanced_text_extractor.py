@@ -64,8 +64,8 @@ class AdvancedTextExtractor:
             logging.info(f"Request id : {request_id} -> Text extracted successfully with advanced text extraction.")
             return extracted_text
         except Exception as e:
-            logging.error(f"E_OCR_014 -> Request id : {request_id} -> Error: OCR extraction failed.")
-            raise CustomException(f"E_OCR_014 -> Request id : {request_id} -> Error: OCR extraction failed.")
+            logging.error(f"E_OCR_014 -> Request id : {request_id} -> Error: OCR extraction failed with error {e}.")
+            raise CustomException(f"E_OCR_014 -> Request id : {request_id} -> Error: OCR extraction failed with error {e}.")
 
     @staticmethod
     def preprocess_image_for_tesseract(image_data, request_id: str):
@@ -87,8 +87,8 @@ class AdvancedTextExtractor:
             logging.info(f"Request id : {request_id} -> Image preprocessed successfully for advanced text extraction.")
             return preprocessed_image
         except Exception as e:
-            logging.error(f"E_OCR_013 -> Request id : {request_id} -> Error: Image preprocessing failed.")
-            raise CustomException(f"E_OCR_013 -> Request id : {request_id} -> Error: Image preprocessing failed.")
+            logging.error(f"E_OCR_013 -> Request id : {request_id} -> Error: Image preprocessing failed with error {e}.")
+            raise CustomException(f"E_OCR_013 -> Request id : {request_id} -> Error: Image preprocessing failed with error {e}.")
 
     @staticmethod
     def upscale_image(image_data, upscale_model, request_id: str):
@@ -121,4 +121,4 @@ class AdvancedTextExtractor:
             # Empty gpu cache
             torch.cuda.empty_cache()
             logging.error(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed with error {e}.")
-            raise CustomException(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed.")
+            raise CustomException(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed with error {e}.")
