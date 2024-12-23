@@ -9,7 +9,9 @@ import cv2
 import numpy as np
 import logging
 from super_image import ImageLoader
+import torch
 
+from torch.amp import autocast
 from utilities.config import LOGGING_LEVEL
 from utilities.custom_exception import CustomException
 from utilities.general_utils import setup_logging
@@ -91,8 +93,15 @@ class AdvancedTextExtractor:
     @staticmethod
     def upscale_image(image_data, upscale_model, request_id: str):
         try:
+            # Empty gpu cache
+            torch.cuda.empty_cache()
             input_image_data = ImageLoader.load_image(image_data)
-            upscaled_image_data = upscale_model(input_image_data)
+
+            # Prevent PyTorch from tracking gradients
+            with torch.no_grad():
+                # Make computations use mixed precision,
+                with autocast(device_type="cuda"):
+                    upscaled_image_data = upscale_model(input_image_data)
 
             # Convert tensor to NumPy array
             upscaled_image_data = upscaled_image_data.detach().cpu().numpy()
@@ -109,5 +118,7 @@ class AdvancedTextExtractor:
             logging.info(f"Request id : {request_id} -> Image upscaled successfully for advanced text extraction.")
             return upscaled_image
         except Exception as e:
-            logging.error(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed.")
+            # Empty gpu cache
+            torch.cuda.empty_cache()
+            logging.error(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed with error {e}.")
             raise CustomException(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed.")
