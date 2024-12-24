@@ -17,6 +17,7 @@ from utilities.config import LOGGING_LEVEL, API_VERSION, DOWNLOADED_IMAGE_PATH
 from utilities.core_utils import generate_request_id, parse_request_data, convert_to_ascii, advanced_text_extraction, \
     TEXT, LATEX, construct_response, validate_file, save_file, extract_data_from_image, \
     extract_image_size, parse_form_data
+from utilities.custom_exception import CustomExceptionAndLog
 from utilities.general_utils import assign_values_from_request, check_url_and_download_image, setup_logging
 
 # Logging Configuration
@@ -123,6 +124,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def convert_text():
     try:
         request_id = generate_request_id()
+        logging.info(f"REQUEST_ID: {request_id}#################")
 
         # Parse incoming request data
         request_data = parse_request_data(request)
@@ -169,15 +171,18 @@ def convert_text():
 
     except Exception as e:
         # Error handling
-        error = str(e)
-        logging.error(f"E_OCR_006 -> Request id : {request_id} -> Error: {error}")
+        if isinstance(e, CustomExceptionAndLog):
+            error_dict = str(e)
+        else:
+            error_dict = {"code": "E_OCR_006", "message": str(e)}
+            logging.error(error_dict)
         response_dict = {
             "status": 1,
             "request_id": request_id,
             "version": app.api_version,
             "image_width": app.image_width,
             "image_height": app.image_height,
-            "error": error,
+            "error": error_dict,
             "url": app.image_url
         }
         return jsonify(response_dict)
@@ -240,15 +245,18 @@ def convert_text_multipart():
 
     except Exception as e:
         # Error handling
-        error = str(e)
-        logging.error(f"E_OCR_009 -> Request id : {request_id} -> Error: {error}")
+        if isinstance(e, CustomExceptionAndLog):
+            error_dict = str(e)
+        else:
+            error_dict = {"code": "E_OCR_009", "message": str(e)}
+            logging.error(error_dict)
         return jsonify({
             "status": 1,
             "request_id": request_id,
             "version": app.api_version,
             "image_width": app.image_width,
             "image_height": app.image_height,
-            "error": error
+            "error": error_dict
         })
 
 

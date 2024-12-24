@@ -13,7 +13,8 @@ import torch
 
 from torch.amp import autocast
 from utilities.config import LOGGING_LEVEL
-from utilities.custom_exception import CustomException
+from utilities.core_utils import construct_error_dict
+from utilities.custom_exception import CustomExceptionAndLog
 from utilities.general_utils import setup_logging
 
 # Logging Configuration
@@ -32,7 +33,7 @@ class AdvancedTextExtractor:
         """Validate if the file format is supported."""
         allowed_formats = ('.png', '.jpg', '.jpeg')
         if not self.downloaded_file_path.lower().endswith(allowed_formats):
-            raise CustomException("E_OCR_016 -> Unsupported file format. Allowed formats: PNG, JPG, JPEG")
+            raise CustomExceptionAndLog("E_OCR_016", "Unsupported file format. Allowed formats: PNG, JPG, JPEG")
 
     def set_language(self, language: str):
         """Set the OCR language for Tesseract."""
@@ -48,25 +49,21 @@ class AdvancedTextExtractor:
     def extract_text(self, upscale_model, request_id: str):
         try:
             image = Image.open(self.downloaded_file_path)
-            logging.info(f"Request id : {request_id} -> Image loaded successfully for advanced text extraction.")
+            logging.info(f"Image loaded successfully for advanced text extraction.")
         except Exception as e:
-            error = str(e)
-            logging.error(f"E_OCR_012 -> Request id : {request_id} -> Error: Corrupt Image -> {error}")
-            raise CustomException(f"E_OCR_012 -> Request id : {request_id} -> Error: Corrupt Image -> {error}")
+            raise CustomExceptionAndLog("E_OCR_012", str(e))
 
         if not callable(upscale_model):
-            logging.error(f"E_OCR_018 -> Request id : {request_id} -> Invalid upscale model provided.")
-            raise CustomException("E_OCR_018 -> Invalid upscale model provided.")
+            raise CustomExceptionAndLog("E_OCR_018", "Invalid upscale model provided.")
 
         upscaled_image = self.upscale_image(image, upscale_model, request_id)
 
         try:
             extracted_text = pytesseract.image_to_string(upscaled_image, lang=self.tesseract_language)
-            logging.info(f"Request id : {request_id} -> Text extracted successfully with advanced text extraction.")
+            logging.info(f"Text extracted successfully with advanced text extraction.")
             return extracted_text
         except Exception as e:
-            logging.error(f"E_OCR_014 -> Request id : {request_id} -> Error: OCR extraction failed with error {e}.")
-            raise CustomException(f"E_OCR_014 -> Request id : {request_id} -> Error: OCR extraction failed with error {e}.")
+            raise CustomExceptionAndLog("E_OCR_014", f"OCR extraction failed with error: {str(e)}")
 
     @staticmethod
     def preprocess_image_for_tesseract(image_data, request_id: str):
@@ -74,7 +71,7 @@ class AdvancedTextExtractor:
             gray_image = cv2.cvtColor(np.array(image_data), cv2.COLOR_BGR2GRAY)
             coords = np.column_stack(np.where(gray_image > 0))
             if coords.size == 0:
-                logging.warning(f"Request id : {request_id} -> Deskew skipped: no content detected.")
+                logging.warning(f"Deskew skipped: no content detected.")
                 return gray_image
 
             angle = cv2.minAreaRect(coords)[-1]
@@ -85,13 +82,11 @@ class AdvancedTextExtractor:
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
             preprocessed_image = cv2.warpAffine(gray_image, M, (w, h), flags=cv2.INTER_CUBIC,
                                                 borderMode=cv2.BORDER_REPLICATE)
-            logging.info(f"Request id : {request_id} -> Image preprocessed successfully for advanced text extraction.")
+            logging.info(f"Image preprocessed successfully for advanced text extraction.")
             return preprocessed_image
         except Exception as e:
-            logging.error(f"E_OCR_013 -> Request id : {request_id} -> Error: Image preprocessing failed with error {e}.")
-            raise CustomException(f"E_OCR_013 -> Request id : {request_id} -> Error: Image preprocessing failed with error {e}.")
+            raise CustomExceptionAndLog("E_OCR_013", f"Image preprocessing failed with error: {str(e)}")
 
-    @staticmethod
     def upscale_image(image_data, upscale_model, request_id: str):
         try:
             # Empty gpu cache
@@ -116,10 +111,9 @@ class AdvancedTextExtractor:
             upscaled_image_data = np.clip(upscaled_image_data * 255, 0, 255).astype(np.uint8)
             upscaled_image = Image.fromarray(upscaled_image_data)
 
-            logging.info(f"Request id : {request_id} -> Image upscaled successfully for advanced text extraction.")
+            logging.info(f"Image upscaled successfully for advanced text extraction.")
             return upscaled_image
         except Exception as e:
             # Empty gpu cache
             torch.cuda.empty_cache()
-            logging.error(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed with error {e}.")
-            raise CustomException(f"E_OCR_015 -> Request id : {request_id} -> Error: Image upscaling failed with error {e}.")
+            raise CustomExceptionAndLog("E_OCR_015", f"Image upscaling failed with error {str(e)}")

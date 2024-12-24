@@ -103,15 +103,15 @@ def construct_response(app, request_id, text_result, advanced_text_result, latex
 def validate_file(request, request_id):
     """Validate if a file is included in the request and is not empty."""
     if 'file' not in request.files:
-        error = "No file part"
-        logging.error(f"E_OCR_007 -> Request id : {request_id} -> Error: {error}")
-        return False, error
+        error_dict = {"code": "E_OCR_007", "message": "No file part"}
+        logging.error(error_dict)
+        return False, error_dict
 
     file = request.files['file']
     if file.filename == '':
-        error = "No selected file"
-        logging.error(f"E_OCR_008 -> Request id : {request_id} -> Error: {error}")
-        return False, error
+        error_dict = {"code": "E_OCR_008", "message": "No selected file"}
+        logging.error(error_dict)
+        return False, error_dict
 
     return True, file
 

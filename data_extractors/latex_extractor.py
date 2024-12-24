@@ -14,7 +14,7 @@ from PIL import Image
 
 from ocrd_typegroups_classifier.typegroups_classifier import TypegroupsClassifier
 from utilities.config import LOGGING_LEVEL
-from utilities.custom_exception import CustomException
+from utilities.custom_exception import CustomExceptionAndLog
 from utilities.general_utils import setup_logging
 
 # Logging Configuration
@@ -56,12 +56,12 @@ class LatexExtractor:
             highest_confidence_score = latex_results[highest_model]['confidence']
             highest_confidence_per_line = latex_results[highest_model]['confidence_per_line']
 
-            logging.info(f"Request id: {request_id} -> Extracted Text: {highest_confidence_text}")
+            logging.info(f"Extracted Text: {highest_confidence_text}")
             return (highest_confidence_text, round(highest_confidence_score, 7),
                     is_handwritten, self.is_diagram, highest_confidence_per_line)
 
         except Exception as e:
-            self._log_and_raise_exception(request_id, "E_OCR_001", "Error: Corrupt Image.", e)
+            raise CustomExceptionAndLog("E_OCR_001", f"Image recognition failed with error: {str(e)}")
 
     def recognize_image_single_language(self, model: Any, request_id: str):
         """
@@ -75,11 +75,11 @@ class LatexExtractor:
             latex_result, confidence_per_line = self._process_with_model(model, image)
             final_confidence_score = self._calculate_final_confidence(confidence_per_line)
 
-            logging.info(f"Request id: {request_id} -> Extracted Text: {latex_result}")
+            logging.info(f"Extracted Text: {latex_result}")
             return latex_result, round(final_confidence_score, 7), is_handwritten, self.is_diagram, confidence_per_line
 
         except Exception as e:
-            self._log_and_raise_exception(request_id, "E_OCR_002", "Error: Corrupt Image.", e)
+            raise CustomExceptionAndLog("E_OCR_002", f"Image recognition failed with error: {str(e)}")
 
     def _process_with_all_models(self, image):
         """
@@ -152,10 +152,10 @@ class LatexExtractor:
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             self._filter_and_mask_contours(image, contours)
-            logging.info(f"Request id: {request_id} -> Diagram detection completed.")
+            logging.info(f"Diagram detection completed.")
 
         except Exception as e:
-            logging.error(f"E_OCR_003 -> Request id: {request_id} -> Error: {e}")
+            logging.error(f"Diagram detection and removal failed with error: {e}")
 
     def _filter_and_mask_contours(self, image, contours):
         """
@@ -181,7 +181,7 @@ class LatexExtractor:
             normalized_result = self._normalize_classifier_result(result)
             return normalized_result['handwritten'] > normalized_result['printed']
         except Exception:
-            logging.error(f"E_OCR_004 -> Request id : {request_id} -> Handwritten or printed not detected.")
+            logging.error(f"Handwritten or printed not detected.")
             return False
 
     @staticmethod
@@ -197,11 +197,3 @@ class LatexExtractor:
         Load and return the image as RGB.
         """
         return Image.open(self.downloaded_file_path).convert('RGB')
-
-    @staticmethod
-    def _log_and_raise_exception(request_id, error_code, message, exception):
-        """
-        Log an error and raise a CustomException.
-        """
-        logging.error(f"{error_code} -> Request id: {request_id} -> {message}: {exception}")
-        raise CustomException(f"{error_code} -> Request id: {request_id} -> {message}: {exception}")

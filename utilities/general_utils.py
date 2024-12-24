@@ -78,23 +78,25 @@ def check_url_and_download_image(image_url: str, request_id: str, app) -> Union[
                 app.image_width, app.image_height = img.size
             return new_downloaded_file_path
         except Exception as e:
-            error = str(e)
-            logging.error(f"E_OCR_010 -> Request id : {request_id} -> Error with exception: {error}")
+            error_dict = {"code": "E_OCR_010", "message": f"Error with exception: {str(e)}"}
+            logging.error(error_dict)
             response_dict = {
+                "status": 1,
                 "request_id": request_id,
                 "version": app.api_version,
                 "image_width": app.image_width,
                 "image_height": app.image_height,
-                "error": error
+                "error": error_dict
             }
             return jsonify(response_dict)
     else:
-        error = str({"error": "Invalid URL format"})
-        logging.error(f"E_OCR_011 -> Request id : {request_id} -> Error: {error}")
+        error_dict = {"code": "E_OCR_011", "message": f"Invalid URL format"}
+        logging.error(error_dict)
         response_dict = {
+            "status": 1,
             "request_id": request_id,
             "version": app.api_version,
-            "error": error
+            "error": error_dict
         }
         return jsonify(response_dict)
 

@@ -54,7 +54,7 @@ class AsciimathConverter:
                         equation.strip(), from_file=False, pprint=False
                     )
                 except Exception as e:
-                    logging.warning(f"Failed to convert equation: {equation}. Error: {e}")
+                    logging.warning(f"Equation conversion failed with error: {str(e)}")
                     per_ascii_result = "Unrecognized Character"
 
                 ascii_result.append({"type": "asciimath", "value": per_ascii_result})
@@ -66,7 +66,7 @@ class AsciimathConverter:
                         latex_expression.strip(), from_file=False, pprint=False
                     )
                 except Exception as e:
-                    logging.error(f"Failed to convert full expression. Error: {e}")
+                    logging.error(f"Full expression conversion failed with error: {str(e)}")
                     full_ascii_result = "Unrecognized Character"
 
                 return [{"type": "asciimath", "value": full_ascii_result}], normal_equation
@@ -74,5 +74,6 @@ class AsciimathConverter:
             return ascii_result, normal_equation
 
         except Exception as e:
-            logging.error(f"E_OCR_005 -> Request ID: {request_id} -> Error: {e}")
+            error_dict = {"code": "E_OCR_005", "message": str(e)}
+            logging.error(error_dict)
             return [{"type": "asciimath", "value": "Formula with Text. Conversion not available."}], ""
