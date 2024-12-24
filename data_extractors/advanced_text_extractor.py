@@ -49,9 +49,10 @@ class AdvancedTextExtractor:
         try:
             image = Image.open(self.downloaded_file_path)
             logging.info(f"Request id : {request_id} -> Image loaded successfully for advanced text extraction.")
-        except Exception:
-            logging.error(f"E_OCR_012 -> Request id : {request_id} -> Error: Corrupt Image.")
-            raise CustomException(f"E_OCR_012 -> Request id : {request_id} -> Error: Corrupt Image.")
+        except Exception as e:
+            error = str(e)
+            logging.error(f"E_OCR_012 -> Request id : {request_id} -> Error: Corrupt Image -> {error}")
+            raise CustomException(f"E_OCR_012 -> Request id : {request_id} -> Error: Corrupt Image -> {error}")
 
         if not callable(upscale_model):
             logging.error(f"E_OCR_018 -> Request id : {request_id} -> Invalid upscale model provided.")

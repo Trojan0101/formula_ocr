@@ -172,6 +172,7 @@ def convert_text():
         error = str(e)
         logging.error(f"E_OCR_006 -> Request id : {request_id} -> Error: {error}")
         response_dict = {
+            "status": 1,
             "request_id": request_id,
             "version": app.api_version,
             "image_width": app.image_width,
@@ -190,6 +191,7 @@ def convert_text_multipart():
         valid, error = validate_file(request, request_id)
         if not valid:
             return jsonify({
+                "status": 1,
                 "request_id": request_id,
                 "version": app.api_version,
                 "error": error
@@ -241,6 +243,7 @@ def convert_text_multipart():
         error = str(e)
         logging.error(f"E_OCR_009 -> Request id : {request_id} -> Error: {error}")
         return jsonify({
+            "status": 1,
             "request_id": request_id,
             "version": app.api_version,
             "image_width": app.image_width,
