@@ -29,7 +29,7 @@ class MyFlaskApp(Flask):
         self.api_version = API_VERSION
 
         # Initialize Pix2Text models for different languages
-        self.latex_model_english = Pix2Text()
+        self.latex_model_english = Pix2Text().from_config(total_configs={'text_formula': {'languages': ('en',)}})
         self.latex_model_korean = self._initialize_latex_model('ko')
         self.latex_model_japanese = self._initialize_latex_model('ja')
         self.latex_model_chinese_sim = self._initialize_latex_model('ch_sim')
@@ -172,12 +172,12 @@ def convert_text():
     except Exception as e:
         # Error handling
         if isinstance(e, CustomExceptionAndLog):
-            error_dict = str(e)
+            error_dict = e.error_dict
         else:
             error_dict = {"code": "E_OCR_006", "message": str(e)}
             logging.error(error_dict)
         response_dict = {
-            "status": 1,
+            "status": 0,
             "request_id": request_id,
             "version": app.api_version,
             "image_width": app.image_width,
@@ -196,7 +196,7 @@ def convert_text_multipart():
         valid, error = validate_file(request, request_id)
         if not valid:
             return jsonify({
-                "status": 1,
+                "status": 0,
                 "request_id": request_id,
                 "version": app.api_version,
                 "error": error
@@ -246,12 +246,12 @@ def convert_text_multipart():
     except Exception as e:
         # Error handling
         if isinstance(e, CustomExceptionAndLog):
-            error_dict = str(e)
+            error_dict = e.error_dict
         else:
             error_dict = {"code": "E_OCR_009", "message": str(e)}
             logging.error(error_dict)
         return jsonify({
-            "status": 1,
+            "status": 0,
             "request_id": request_id,
             "version": app.api_version,
             "image_width": app.image_width,

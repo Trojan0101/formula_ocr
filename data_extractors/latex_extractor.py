@@ -155,6 +155,7 @@ class LatexExtractor:
             logging.info(f"Diagram detection completed.")
 
         except Exception as e:
+            # E_OCR_003
             logging.error(f"Diagram detection and removal failed with error: {e}")
 
     def _filter_and_mask_contours(self, image, contours):
@@ -181,6 +182,7 @@ class LatexExtractor:
             normalized_result = self._normalize_classifier_result(result)
             return normalized_result['handwritten'] > normalized_result['printed']
         except Exception:
+            # E_OCR_004
             logging.error(f"Handwritten or printed not detected.")
             return False
 

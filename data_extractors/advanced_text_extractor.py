@@ -13,7 +13,6 @@ import torch
 
 from torch.amp import autocast
 from utilities.config import LOGGING_LEVEL
-from utilities.core_utils import construct_error_dict
 from utilities.custom_exception import CustomExceptionAndLog
 from utilities.general_utils import setup_logging
 
@@ -54,7 +53,7 @@ class AdvancedTextExtractor:
             raise CustomExceptionAndLog("E_OCR_012", str(e))
 
         if not callable(upscale_model):
-            raise CustomExceptionAndLog("E_OCR_018", "Invalid upscale model provided.")
+            raise CustomExceptionAndLog("E_OCR_017", "Invalid upscale model provided.")
 
         upscaled_image = self.upscale_image(image, upscale_model, request_id)
 
@@ -87,7 +86,7 @@ class AdvancedTextExtractor:
         except Exception as e:
             raise CustomExceptionAndLog("E_OCR_013", f"Image preprocessing failed with error: {str(e)}")
 
-    def upscale_image(image_data, upscale_model, request_id: str):
+    def upscale_image(self, image_data, upscale_model, request_id: str):
         try:
             # Empty gpu cache
             torch.cuda.empty_cache()

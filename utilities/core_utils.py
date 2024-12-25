@@ -70,7 +70,7 @@ def construct_response(app, request_id, text_result, advanced_text_result, latex
                        is_handwritten, is_diagram_available, latex_confidence, confidence_per_line):
     """Construct the appropriate response based on the requested formats."""
     response_dict = {
-        "status": 0,
+        "status": 1,
         "request_id": request_id,
         "version": app.api_version,
         "image_width": app.image_width,

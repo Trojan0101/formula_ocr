@@ -81,7 +81,7 @@ def check_url_and_download_image(image_url: str, request_id: str, app) -> Union[
             error_dict = {"code": "E_OCR_010", "message": f"Error with exception: {str(e)}"}
             logging.error(error_dict)
             response_dict = {
-                "status": 1,
+                "status": 0,
                 "request_id": request_id,
                 "version": app.api_version,
                 "image_width": app.image_width,
@@ -93,7 +93,7 @@ def check_url_and_download_image(image_url: str, request_id: str, app) -> Union[
         error_dict = {"code": "E_OCR_011", "message": f"Invalid URL format"}
         logging.error(error_dict)
         response_dict = {
-            "status": 1,
+            "status": 0,
             "request_id": request_id,
             "version": app.api_version,
             "error": error_dict
