@@ -55,7 +55,12 @@ class AdvancedTextExtractor:
         if not callable(upscale_model):
             raise CustomExceptionAndLog("E_OCR_017", "Invalid upscale model provided.")
 
-        upscaled_image = self.upscale_image(image, upscale_model, request_id)
+        image_width, image_height = image.size
+        if image_width >= 1080 or image_height >= 1080:
+            upscaled_image = image
+            logging.info(f"Image already in good quality.")
+        else:
+            upscaled_image = self.upscale_image(image, upscale_model, request_id)
 
         try:
             extracted_text = pytesseract.image_to_string(upscaled_image, lang=self.tesseract_language)
