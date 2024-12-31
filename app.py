@@ -225,8 +225,8 @@ def convert_text_multipart():
         # Advanced text extraction if enabled
         advanced_extracted_text = advanced_text_extraction(app, file_path, request_id)
 
-        if len(advanced_text_result) <= len(text_result) // 2:
-            advanced_text_result = text_result
+        if len(advanced_extracted_text) <= len(text_result) // 2:
+            advanced_extracted_text = text_result
 
         # If no text result, use the ASCII result
         if not text_result.strip():
