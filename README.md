@@ -1,7 +1,5 @@
 # Formula OCR
 
-`Stakeholder: Raja Chelladurai, Axis API [Freelance_External]`
-
 - Detect and extract text in multiple languages **[English, Chinese traditional, Chinese simplified, Korean, Japanese]**.
 - Detect and extract mathematical, and chemical formulas.
 - Detect if diagram is present in the image.
