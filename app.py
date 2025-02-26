@@ -108,15 +108,14 @@ class MyFlaskApp(Flask):
         config = {
             'text_formula': {'languages': ('en', language_code)},
         }
-        # return Pix2Text.from_config(total_configs=config, device="cuda")  # In-case of gpu support
-        return Pix2Text.from_config(total_configs=config)
+        return Pix2Text.from_config(total_configs=config, device="cuda")  # In-case of gpu support
+        # return Pix2Text.from_config(total_configs=config) # In-case of no gpu support
 
 
 
 # Create an instance of your Flask app
 app = MyFlaskApp(__name__)
 
-# Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
@@ -126,25 +125,20 @@ def convert_text():
         request_id = generate_request_id()
         logging.info(f"REQUEST_ID: {request_id}#################")
 
-        # Parse incoming request data
         request_data = parse_request_data(request)
         assign_values_from_request(request_data, app=app)
 
-        # Download image
         downloaded_file_path = check_url_and_download_image(image_url=app.image_url, request_id=request_id, app=app)
         if isinstance(downloaded_file_path, dict):
             return downloaded_file_path
 
         app.image_width, app.image_height = extract_image_size(downloaded_file_path)
 
-        # Extract data from image
         (latex_styled_result, latex_confidence, is_handwritten,
          is_diagram_available, confidence_per_line) = extract_data_from_image(downloaded_file_path, app, request_id)
 
-        # Convert to ASCII
         data_ascii_result, text_result = convert_to_ascii(latex_styled_result, app, request_id)
 
-        # Advanced text extraction
         advanced_text_result = advanced_text_extraction(app, downloaded_file_path, request_id)
 
         if advanced_text_result is not None:
@@ -153,14 +147,11 @@ def convert_text():
         else:
             advanced_text_result = ""
 
-        # If text result is empty, use ASCII result
         if not text_result.strip():
             text_result = "".join([item["value"] for item in data_ascii_result if item["type"] == "asciimath"])
 
-        # Clean latex styled result
         latex_styled_result = re.sub(r'\\{2,}', r'\\', latex_styled_result)
 
-        # Prepare the final data result
         final_data_result = []
         if app.include_text:
             final_data_result.append({"type": TEXT, "value": text_result})
@@ -169,14 +160,12 @@ def convert_text():
         if app.include_latex:
             final_data_result.append({"type": LATEX, "value": latex_styled_result})
 
-        # Construct and return the response
         return construct_response(
             app, request_id, text_result, advanced_text_result, latex_styled_result, final_data_result,
             is_handwritten, is_diagram_available, latex_confidence, confidence_per_line
         )
 
     except Exception as e:
-        # Error handling
         if isinstance(e, CustomExceptionAndLog):
             error_dict = e.error_dict
         else:
@@ -198,7 +187,6 @@ def convert_text_multipart():
     try:
         request_id = generate_request_id()
 
-        # Validate the file in the request
         valid, error = validate_file(request, request_id)
         if not valid:
             return jsonify({
@@ -211,21 +199,16 @@ def convert_text_multipart():
         file = request.files['file']
         file_path = save_file(file, request_id, app)
 
-        # Extract image size
         app.image_width, app.image_height = extract_image_size(file_path)
 
-        # Parse form data
         request_data = parse_form_data(request)
         assign_values_from_request(request_data, app=app)
 
-        # Process the image
         (latex_styled_result, latex_confidence, is_handwritten,
          is_diagram_available, confidence_per_line) = extract_data_from_image(file_path, app, request_id)
 
-        # Convert to ASCII
         data_ascii_result, text_result = convert_to_ascii(latex_styled_result, app, request_id)
 
-        # Advanced text extraction if enabled
         advanced_extracted_text = advanced_text_extraction(app, file_path, request_id)
 
         if advanced_extracted_text is not None:
@@ -234,13 +217,11 @@ def convert_text_multipart():
         else:
             advanced_extracted_text = ""
 
-        # If no text result, use the ASCII result
         if not text_result.strip():
             text_result = "".join([item["value"] for item in data_ascii_result if item["type"] == "asciimath"])
 
         latex_styled_result = re.sub(r'\\{2,}', r'\\', latex_styled_result)
 
-        # Prepare final data result
         final_data_result = []
         if app.include_text:
             final_data_result.append({"type": TEXT, "value": text_result})
@@ -249,14 +230,12 @@ def convert_text_multipart():
         if app.include_latex:
             final_data_result.append({"type": LATEX, "value": latex_styled_result})
 
-        # Construct and return the response
         return construct_response(
             app, request_id, text_result, advanced_extracted_text, latex_styled_result, final_data_result,
             is_handwritten, is_diagram_available, latex_confidence, confidence_per_line
         )
 
     except Exception as e:
-        # Error handling
         if isinstance(e, CustomExceptionAndLog):
             error_dict = e.error_dict
         else:
