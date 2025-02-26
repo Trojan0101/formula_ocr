@@ -32,7 +32,7 @@
 
 3) Move modified pooling.py to `torch/nn/modules/` pooling.py file:
     ```bash
-     mv modified_site_packages/torch/pooling.py formula_ocr_env/<python_version>/site_packages/torch/nn/modules/pooling.py
+     mv modified_site_packages/torch/nn/modules/pooling.py formula_ocr_env/<python_version>/site_packages/torch/nn/modules/pooling.py
     ```
 
 4) Run:
