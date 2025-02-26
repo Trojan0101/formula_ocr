@@ -93,17 +93,13 @@ class AdvancedTextExtractor:
 
     def upscale_image(self, image_data, upscale_model, request_id: str):
         try:
-            # Empty gpu cache
             torch.cuda.empty_cache()
             input_image_data = ImageLoader.load_image(image_data)
 
-            # Prevent PyTorch from tracking gradients
             with torch.no_grad():
-                # Make computations use mixed precision,
                 with autocast(device_type="cuda"):
                     upscaled_image_data = upscale_model(input_image_data)
 
-            # Convert tensor to NumPy array
             upscaled_image_data = upscaled_image_data.detach().cpu().numpy()
 
             if upscaled_image_data.ndim == 3 and upscaled_image_data.shape[0] == 1:
@@ -118,6 +114,5 @@ class AdvancedTextExtractor:
             logging.info(f"Image upscaled successfully for advanced text extraction.")
             return upscaled_image
         except Exception as e:
-            # Empty gpu cache
             torch.cuda.empty_cache()
             raise CustomExceptionAndLog("E_OCR_015", f"Image upscaling failed with error {str(e)}")
