@@ -40,14 +40,12 @@ class AsciimathConverter:
         """
         ascii_result = []
         try:
-            # Normalize LaTeX expression: convert to text
             normal_equation = LatexNodes2Text().latex_to_text(latex_expression)
             equations = [
                 eq.replace('?', '').strip().replace('∴', '')
                 for eq in normal_equation.split('\n') if eq.strip()
             ]
 
-            # Attempt to convert each line (optional if input has multiple lines)
             for equation in equations:
                 try:
                     per_ascii_result = self.converter_model.translate(
@@ -59,7 +57,6 @@ class AsciimathConverter:
 
                 ascii_result.append({"type": "asciimath", "value": per_ascii_result})
 
-            # If conversion produced no valid results, try converting the full LaTeX expression
             if not ascii_result or all(res["value"] == "Unrecognized Character" for res in ascii_result):
                 try:
                     full_ascii_result = self.converter_model.translate(
