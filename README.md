@@ -1,7 +1,7 @@
 # Formula OCR
 
 - Detect and extract text in multiple languages **[English, Chinese traditional, Chinese simplified, Korean, Japanese]**.
-- Detect and extract mathematical, and chemical formulas.
+- Detect and extract mathematical formulas.
 - Detect if diagram is present in the image.
 - Detect if text is handwritten or printed.
 - Convert data to latex format.
