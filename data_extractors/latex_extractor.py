@@ -50,7 +50,6 @@ class LatexExtractor:
             
             latex_results = self._process_with_all_models(image)
             
-            # Find the model with the highest confidence
             highest_model = max(latex_results, key=lambda k: latex_results[k]['confidence'])
             highest_confidence_text = latex_results[highest_model]['text']
             highest_confidence_score = latex_results[highest_model]['confidence']
@@ -130,7 +129,7 @@ class LatexExtractor:
         Normalize confidence values per line based on line occurrence counts.
         """
         for line_number in confidence_per_line:
-            count = line_counts.get(line_number, 1)  # Avoid division by zero
+            count = line_counts.get(line_number, 1)
             confidence_per_line[line_number] = round((confidence_per_line[line_number] / count) * 100, 7)
 
     @staticmethod
@@ -155,7 +154,6 @@ class LatexExtractor:
             logging.info(f"Diagram detection completed.")
 
         except Exception as e:
-            # E_OCR_003
             logging.error(f"Diagram detection and removal failed with error: {e}")
 
     def _filter_and_mask_contours(self, image, contours):
@@ -165,7 +163,7 @@ class LatexExtractor:
         for contour in contours:
             if cv2.contourArea(contour) > 500:
                 x, y, w, h = cv2.boundingRect(contour)
-                if 0.3 < float(w) / h < 3.0:  # Aspect ratio filtering
+                if 0.3 < float(w) / h < 3.0:
                     cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
                     self.is_diagram = True
         cv2.imwrite(self.downloaded_file_path, image)
@@ -182,7 +180,6 @@ class LatexExtractor:
             normalized_result = self._normalize_classifier_result(result)
             return normalized_result['handwritten'] > normalized_result['printed']
         except Exception:
-            # E_OCR_004
             logging.error(f"Handwritten or printed not detected.")
             return False
 
